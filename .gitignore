@@ -1,0 +1,6 @@
+results_cache/
+cache.db/
+exports/
+*.ndjson
+logsearch.db
+saved_searches.json
