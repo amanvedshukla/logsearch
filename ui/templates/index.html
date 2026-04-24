@@ -56,8 +56,8 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .saved-name:hover{color:var(--blue3);}
 .saved-del{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;}
 .saved-del:hover{color:var(--red);}
-.save-search-btn{width:100%;margin-top:5px;background:transparent;border:1px dashed var(--border);color:var(--text3);padding:6px;border-radius:6px;cursor:pointer;font-size:11px;transition:all .2s;}
-.save-search-btn:hover{border-color:var(--blue2);color:var(--blue3);}
+
+
 /* Recent */
 .rec-list{display:flex;flex-direction:column;gap:2px;}
 .rec-item{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;cursor:pointer;transition:background .15s;}
@@ -261,14 +261,6 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
   </div>
 
   <div>
-    <span class="sec">Saved Searches</span>
-    <div class="saved-list" id="savedList">
-      <div style="font-size:11px;color:var(--text4);padding:4px 6px;">No saved searches</div>
-    </div>
-    <button class="save-search-btn" onclick="openSaveModal()">+ Save current search</button>
-  </div>
-
-  <div>
     <span class="sec">Recent Searches</span>
     <div class="rec-list" id="recList">
       <div style="font-size:11px;color:var(--text4);padding:4px 6px;">No recent searches</div>
@@ -281,7 +273,7 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
     <div class="sr">
       <input class="s-in" id="sIn" placeholder="Type keywords and press Enter... (Ctrl+Enter)" onkeydown="if(event.key==='Enter')doSearch()">
       <select class="mode-s" id="modeSel"><option value="OR">OR mode</option><option value="AND">AND mode</option></select>
-      <select class="mode-s" id="orderSel" title="Search order"><option value="oldest">Oldest first</option><option value="latest">Latest first</option></select>
+      
       <button class="go-btn" id="goBtn" onclick="doSearch()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         Search
@@ -292,8 +284,8 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
       </button>
     </div>
     <div class="tr">
-      <div class="dg"><div class="dlbl">Start</div><div class="di"><input type="date" class="d-in" id="sd" value="2026-04-07"><input type="time" class="d-in" id="st" value="10:00"></div></div>
-      <div class="dg"><div class="dlbl">End</div><div class="di"><input type="date" class="d-in" id="ed" value="2026-04-07"><input type="time" class="d-in" id="et" value="12:00"></div></div>
+      <div class="dg"><div class="dlbl">Start</div><div class="di"><input type="time" class="d-in" id="st" value="10:00"></div></div>
+      <div class="dg"><div class="dlbl">End</div><div class="di"><input type="time" class="d-in" id="et" value="12:00"></div></div>
       <div id="cBadge" class="cache-badge"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>Cache Hit</div>
     </div>
     <div class="opts-row">
@@ -303,7 +295,7 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
         Stop after:
         <input type="number" class="ctx-in" id="stopAfter" placeholder="∞" min="1" step="1000" style="width:70px;"> matches
       </label>
-      <label class="opt-chip">
+      <label class="opt-chip" style="margin-left:12px;">
         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
         Context lines:
         <input type="number" class="ctx-in" id="ctxLines" placeholder="0" min="0" max="10" value="0">
@@ -453,7 +445,6 @@ document.addEventListener('keydown',function(e){
 });
 
 renderRec();
-loadSavedSearches();
 
 // ── File browser ──────────────────────────────────────────────────────────────
 function openBrowser(p){fbMode='folder';fbSelectedFile='';document.getElementById('tabFolder').classList.add('on');document.getElementById('tabFile').classList.remove('on');document.getElementById('fbOverlay').classList.add('show');loadDir(p||'/');}
@@ -543,57 +534,6 @@ function renderKw(){
   document.getElementById('exTags').innerHTML=excludeKws.map(function(k){return '<div class="kw-tag exclude">NOT: '+k+'<button onclick="remEx(\''+k+'\')">×</button></div>';}).join('');
 }
 
-// ── Saved Searches ────────────────────────────────────────────────────────────
-async function loadSavedSearches(){
-  try{
-    var r=await fetch('/saved-searches');
-    var ss=await r.json();
-    renderSaved(ss);
-  }catch(e){}
-}
-
-function renderSaved(ss){
-  var el=document.getElementById('savedList');
-  if(!ss||!ss.length){el.innerHTML='<div style="font-size:11px;color:var(--text4);padding:4px 6px;">No saved searches</div>';return;}
-  el.innerHTML=ss.map(function(s){
-    return '<div class="saved-item"><span class="saved-name" onclick="runSaved(\''+esc(JSON.stringify(s))+'\')" title="'+s.keywords.join(', ')+'">'+s.name+'</span><button class="saved-del" onclick="deleteSaved(\''+s.id+'\')" title="Delete">×</button></div>';
-  }).join('');
-}
-
-function openSaveModal(){
-  if(!curQ){alert('Run a search first');return;}
-  document.getElementById('saveNameIn').value='';
-  document.getElementById('saveMod').classList.add('show');
-  setTimeout(function(){document.getElementById('saveNameIn').focus();},100);
-}
-
-async function confirmSave(){
-  var name=document.getElementById('saveNameIn').value.trim();
-  if(!name){alert('Enter a name');return;}
-  var s={name:name,keywords:curQ.keywords||[],exclude_keywords:curQ.exclude_keywords||[],mode:curQ.mode||'OR',path:curQ.search_path||selPath,regex_pattern:curQ.regex_pattern||''};
-  await fetch('/saved-searches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(s)});
-  document.getElementById('saveMod').classList.remove('show');
-  loadSavedSearches();
-}
-
-async function deleteSaved(id){
-  await fetch('/saved-searches?id='+id,{method:'DELETE'});
-  loadSavedSearches();
-}
-
-function runSaved(sJson){
-  try{
-    var s=JSON.parse(sJson);
-    kws=s.keywords||[];
-    excludeKws=s.exclude_keywords||[];
-    renderKw();
-    document.getElementById('sIn').value=kws.join(' ');
-    document.getElementById('modeSel').value=s.mode||'OR';
-    document.getElementById('regexIn').value=s.regex_pattern||'';
-    if(s.path){selPath=s.path;document.getElementById('curPath').textContent=s.path.split('/').pop()||s.path;document.getElementById('gzCount').textContent='From saved search';}
-    doSearch();
-  }catch(e){console.error(e);}
-}
 
 // ── Search ────────────────────────────────────────────────────────────────────
 function cancelSearch(){
@@ -611,15 +551,15 @@ function doSearch(){
   var ctxLines=parseInt(document.getElementById('ctxLines').value)||0;
   var regexPat=document.getElementById('regexIn').value.trim();
   var caseSens=document.getElementById('caseSensitive').checked;
-  var sd=document.getElementById('sd').value,st2=document.getElementById('st').value;
-  var ed=document.getElementById('ed').value,et2=document.getElementById('et').value;
+  var sd='',st2=document.getElementById('st').value;
+  var ed='',et2=document.getElementById('et').value;
   var inKws=raw?raw.split(/\s+/).map(function(k){return k.toUpperCase();}):[]; 
   var allKws=[].concat(kws,inKws).filter(function(v,i,a){return a.indexOf(v)===i;});
   
   if(!allKws.length&&!regexPat){alert('Add at least one keyword or regex pattern');return;}
   if(!selPath){alert('Please select a log folder or .gz file first');openBrowser('/');return;}
 
-  var order=document.getElementById('orderSel').value||'oldest';
+  var order='oldest';
   curQ={keywords:allKws,exclude_keywords:excludeKws,regex_pattern:regexPat,case_sensitive:caseSens,mode:mode,start_time:sd+(st2?' '+st2:''),end_time:ed+(et2?' '+et2:''),request_id:'ui-'+Date.now(),from_line:0,to_line:0,search_path:selPath,context_lines:ctxLines,max_lines_per_file:0,max_matches:maxLines,search_order:order};
   curPage=1;
 
@@ -684,6 +624,7 @@ function resetBtn(){
 
 function finish(d,fromCache){
   document.getElementById('progSpin').style.display='none';
+  document.getElementById('pMsg').textContent='';
   document.getElementById('cancelBtn').classList.remove('show');
   document.getElementById('progTitle').textContent=fromCache?'⚡ Cache Hit':(d.total_matches||0).toLocaleString()+' matches found';
   document.getElementById('pBar').style.width='100%';
@@ -779,7 +720,15 @@ async function handleDL(scope){
   var dlIcon='<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>';
   if(curFmt==='zip'){
     if(scope==='page'){alert('ZIP download is only available for all results.');return;}
-    if(dlUrl&&dlUrl.length>1){window.open(dlUrl,'_blank');}else{alert('ZIP is still being prepared, please wait a moment.');}
+    var btn=document.querySelector('#dlBtn button:last-child');
+    if(btn){btn.textContent='Preparing ZIP...';btn.disabled=true;}
+    try{
+      var r=await fetch('/download/zip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)});
+      if(!r.ok){alert('ZIP error: '+r.statusText);return;}
+      var blob=await r.blob();
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='logsearch_results.zip';a.click();URL.revokeObjectURL(a.href);
+    }catch(e){alert('ZIP error: '+e.message);}
+    finally{if(btn){btn.disabled=false;btn.textContent='All Results';}}
     return;
   }
   if(curFmt==='pdf'){await dlPDF(scope);return;}

@@ -22,6 +22,7 @@ import (
 	"sort"
 	ahocorasick "github.com/BobuSumisu/aho-corasick"
 	"logsearch/internal/cache"
+	"logsearch/internal/export"
 	"logsearch/internal/types"
 )
 
@@ -328,40 +329,21 @@ func searchFiles(
 			if contextSize > 10 {
 				contextSize = 10
 			}
-			var lineBuffer []string
-			if contextSize > 0 {
-				lineBuffer = make([]string, 0, contextSize*2+1)
-			}
+
 
 			lineNum := 0
 			fileMatchCount := 0
-			var allLines []string
-
-			// If context lines needed, read all into memory first (bounded)
+			// Context lines: sliding window approach (memory efficient)
 			if contextSize > 0 {
+				window := make([]string, 0, contextSize*2+1)
+				pendingMatches := []struct{ line string; terms []string; winIdx int }{}
+				lineIdx := 0
 				for scanner.Scan() {
-					lineNum++
-					if q.MaxLinesPerFile > 0 && lineNum > q.MaxLinesPerFile {
-						break
-					}
-					allLines = append(allLines, scanner.Text())
-					if len(allLines) > 500_000 {
-						break // safety cap
-					}
-				}
-				_ = lineBuffer
-				for i, line := range allLines {
-					select {
-					case <-ctx.Done():
-						resultsCh <- nil
-						return
-					default:
-					}
-					if q.MaxLinesPerFile > 0 && fileMatchCount >= q.MaxLinesPerFile {
-						break
-					}
+					lineIdx++
+					line := scanner.Text()
+					window = append(window, line)
 					atomic.AddInt64(&linesScanned, 1)
-					if i%5000 == 0 {
+					if lineIdx%5000 == 0 {
 						select {
 						case progressCh <- Progress{
 							FilesTotal: totalFiles, FilesSearched: atomic.LoadInt64(&filesSearched),
@@ -370,32 +352,67 @@ func searchFiles(
 						default:
 						}
 					}
+					select {
+					case <-ctx.Done():
+						resultsCh <- nil
+						return
+					default:
+					}
 					m, terms := matchLine(line, trie, kwLower, excludeLower, regexPat, q)
 					if m {
 						atomic.AddInt64(&matchesFound, 1)
 						fileMatchCount++
-						// Gather context
-						start := i - contextSize
-						if start < 0 {
-							start = 0
-						}
-						end := i + contextSize + 1
-						if end > len(allLines) {
-							end = len(allLines)
-						}
-						var ctxLines []string
-						for _, cl := range allLines[start:end] {
-							ctxLines = append(ctxLines, cl)
-						}
-						_m := types.Match{FilePath:fpath,LineNumber:i+1,LineText:line,MatchedTerms:terms,ContextLines:ctxLines,ContextStart:start+1}
-						if matchWriter != nil {
-							writeMu.Lock()
-							if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
-							writeMu.Unlock()
-						}
-						newCnt := atomic.AddInt64(matchCount,1)
-						if maxMatches>0 && newCnt>=maxMatches { resultsCh<-nil; return }
+						// Store match with pending index for future context
+						pendingMatches = append(pendingMatches, struct{ line string; terms []string; winIdx int }{line, terms, lineIdx})
 					}
+					// Flush pending matches whose future context is now available
+					for len(pendingMatches) > 0 {
+						pm := pendingMatches[0]
+						if lineIdx >= pm.winIdx + contextSize {
+							// Collect context from window
+							matchWinPos := lineIdx - pm.winIdx
+							ctxStart := len(window) - matchWinPos - contextSize - 1
+							if ctxStart < 0 { ctxStart = 0 }
+							ctxEnd := len(window)
+							var ctxLines []string
+							for _, cl := range window[ctxStart:ctxEnd] {
+								ctxLines = append(ctxLines, cl)
+							}
+							ctxStartLine := pm.winIdx - (len(ctxLines) - contextSize - 1)
+							if ctxStartLine < 1 { ctxStartLine = 1 }
+							_m := types.Match{FilePath:fpath,LineNumber:pm.winIdx,LineText:pm.line,MatchedTerms:pm.terms,ContextLines:ctxLines,ContextStart:ctxStartLine}
+							if matchWriter != nil {
+								writeMu.Lock()
+								if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
+								writeMu.Unlock()
+							}
+							newCnt := atomic.AddInt64(matchCount,1)
+							pendingMatches = pendingMatches[1:]
+							if maxMatches>0 && newCnt>=maxMatches { resultsCh<-nil; return }
+						} else {
+							break
+						}
+					}
+					// Keep window bounded
+					if len(window) > contextSize*2+2 {
+						window = window[1:]
+					}
+				}
+				// Flush remaining pending matches
+				for _, pm := range pendingMatches {
+					ctxStart := 0
+					ctxEnd := len(window)
+					var ctxLines []string
+					for _, cl := range window[ctxStart:ctxEnd] {
+						ctxLines = append(ctxLines, cl)
+					}
+					_m := types.Match{FilePath:fpath,LineNumber:pm.winIdx,LineText:pm.line,MatchedTerms:pm.terms,ContextLines:ctxLines,ContextStart:pm.winIdx}
+					if matchWriter != nil {
+						writeMu.Lock()
+						if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
+						writeMu.Unlock()
+					}
+					atomic.AddInt64(matchCount,1)
 				}
 			} else {
 				// Fast path: no context, stream directly
@@ -456,6 +473,16 @@ func matchLine(
 	regexPat *regexp.Regexp,
 	q types.Query,
 ) (bool, []string) {
+	// Time filter — compare only time part (HH:MM) from log line "2006-01-02 15:04:05"
+	if (q.StartTime != "" || q.EndTime != "") && len(line) >= 19 {
+		lineTime := line[11:16] // "HH:MM"
+		start := strings.TrimSpace(q.StartTime)
+		end := strings.TrimSpace(q.EndTime)
+		if len(start) >= 5 { start = start[:5] }
+		if len(end) >= 5 { end = end[:5] }
+		if start != "" && lineTime < start { return false, nil }
+		if end != "" && lineTime > end { return false, nil }
+	}
 	lower := strings.ToLower(line)
 
 	// Exclude check
@@ -897,6 +924,35 @@ func pageDownloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func zipHandler(w http.ResponseWriter, r *http.Request) {
+	var q types.Query
+	json.NewDecoder(r.Body).Decode(&q)
+	entry := queryCache.GetFilePath(queryHash(q))
+	if entry == nil {
+		http.Error(w, "no results", 404)
+		return
+	}
+	allMatches, err := cache.ReadMatchesPage(entry.FilePath, 1, entry.TotalMatches)
+	if err != nil {
+		http.Error(w, "read error: "+err.Error(), 500)
+		return
+	}
+	result := &types.SearchResult{
+		Matches:       allMatches,
+		TotalFiles:    entry.TotalFiles,
+		FilesSearched: entry.TotalFiles,
+	}
+	zipPath, err := export.CreateZip(result)
+	if err != nil {
+		http.Error(w, "zip error: "+err.Error(), 500)
+		return
+	}
+	defer os.Remove(zipPath)
+	w.Header().Set("Content-Type", "application/zip")
+	w.Header().Set("Content-Disposition", "attachment; filename=logsearch_results.zip")
+	http.ServeFile(w, r, zipPath)
+}
+
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Path[1:]
 	if _, err := os.Stat(p); err != nil {
@@ -931,6 +987,7 @@ func main() {
 	http.HandleFunc("/browse", browseHandler)
 	http.HandleFunc("/search/stream", searchSSEHandler)
 	http.HandleFunc("/search/page", pageHandler)
+	http.HandleFunc("/download/zip", zipHandler)
 	http.HandleFunc("/download/csv", csvHandler)
 	http.HandleFunc("/download/txt", txtHandler)
 	http.HandleFunc("/download/json", jsonDLHandler)
