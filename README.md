@@ -66,6 +66,45 @@ Live server monitoring — auto-refreshes every 5 seconds:
 
 ---
 
+
+## 🐳 Docker / Podman
+
+### Quick Start (No Go required)
+
+**Using Podman:**
+```bash
+podman run -d -p 8080:8080 docker.io/amanvedshukla/logsearch:v3.0
+```
+
+**Using Docker:**
+```bash
+docker run -d -p 8080:8080 amanvedshukla/logsearch:v3.0
+```
+
+Open your browser at **http://localhost:8080**
+
+> No Go installation needed — just Docker or Podman!
+
+### Build Image Yourself
+
+```bash
+git clone https://github.com/amanvedshukla/logsearch.git
+cd logsearch
+podman build -t logsearch:v3.0 .
+podman run -d -p 8080:8080 --name logsearch logsearch:v3.0
+```
+
+### Useful Commands
+
+```bash
+podman stop logsearch      # Stop
+podman start logsearch     # Start
+podman restart logsearch   # Restart
+podman logs logsearch      # View logs
+podman rm logsearch        # Remove container
+```
+
+---
 ## 🚀 Getting Started
 
 ### Prerequisites
