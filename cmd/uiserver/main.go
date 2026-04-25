@@ -1195,6 +1195,33 @@ func getCacheEntryCount() int {
 	return count
 }
 
+
+// ─── /cache/clear ─────────────────────────────────────────────────────────────
+func clearCacheHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	if r.Method != http.MethodPost {
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": "POST required"})
+		return
+	}
+	deletedFiles := 0
+	entries, err := os.ReadDir("results_cache")
+	if err == nil {
+		for _, e := range entries {
+			if !e.IsDir() {
+				if os.Remove(filepath.Join("results_cache", e.Name())) == nil {
+					deletedFiles++
+				}
+			}
+		}
+	}
+	queryCache.ClearAll()
+	log.Printf("[CACHE] Cleared %d result files", deletedFiles)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"ok":            true,
+		"deleted_files": deletedFiles,
+		"message":       fmt.Sprintf("Cache cleared — %d files deleted", deletedFiles),
+	})
+}
 // ─── main ─────────────────────────────────────────────────────────────────────
 func main() {
 	var err error
@@ -1220,6 +1247,7 @@ func main() {
 	// ── NEW ──
 	http.HandleFunc("/stats/file", fileStatsHandler)
 	http.HandleFunc("/metrics", metricsHandler)
+	http.HandleFunc("/cache/clear", clearCacheHandler)
 
 	fmt.Println("╔══════════════════════════════════════╗")
 	fmt.Println("║   LogSearch Engine v3.0              ║")

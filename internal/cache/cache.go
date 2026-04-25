@@ -133,3 +133,7 @@ func CleanOldResultFiles(dir string, maxMB int64) {
 func (c *Cache) Get(key string) *types.SearchResult       { return nil }
 func (c *Cache) Set(key string, result *types.SearchResult) {}
 func (c *Cache) ForEach(fn func(string, *types.SearchResult)) {}
+
+func (c *Cache) ClearAll() {
+	_ = c.db.DropAll()
+}
