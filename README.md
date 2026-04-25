@@ -8,9 +8,14 @@ A high-performance, browser-based log search tool built in Go — designed to se
 
 ## 📸 Screenshots
 
-| Search | File Stats | Metrics |
-|--------|------------|---------|
-| Search logs with keywords or regex | Error breakdown charts | Live CPU & RAM monitoring |
+### Search Page
+![Search Page](screenshots/search_page.png)
+
+### File Stats Page
+![File Stats](screenshots/file_stat.png)
+
+### Metrics Page
+![Metrics](screenshots/cpu_ram.png)
 
 ---
 
