@@ -18,6 +18,11 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .th-toggle{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px;display:flex;cursor:pointer;gap:2px;margin-left:12px;}
 .th-btn{width:28px;height:24px;border-radius:16px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--text3);font-size:12px;}
 .th-btn.on{background:var(--blue);color:#fff;}
+/* Nav page tabs */
+.nav-tabs{display:flex;align-items:center;gap:4px;}
+.nav-tab{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:6px;border:1px solid transparent;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);background:transparent;transition:all .15s;}
+.nav-tab:hover{color:var(--text);background:var(--bg3);}
+.nav-tab.on{color:var(--blue3);background:var(--blue4);border-color:var(--blue2);}
 .layout{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 52px);}
 .sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;}
 .sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 4px;display:block;margin-bottom:5px;}
@@ -39,7 +44,6 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .add-btn:hover{background:var(--blue);color:#fff;}
 .add-btn.excl{background:var(--red2);color:var(--red);}
 .add-btn.excl:hover{background:#7f1d1d;color:#fca5a5;}
-/* Regex */
 .regex-row{display:flex;flex-direction:column;gap:5px;padding:9px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;}
 .regex-hdr{display:flex;align-items:center;justify-content:space-between;}
 .regex-lbl{font-size:11px;color:var(--purple);font-weight:600;display:flex;align-items:center;gap:5px;}
@@ -48,7 +52,6 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .regex-in{width:100%;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:5px;font-size:11px;font-family:monospace;outline:none;}
 .regex-in:focus{border-color:var(--purple);}
 .regex-in::placeholder{color:var(--text4);}
-/* Saved searches */
 .saved-list{display:flex;flex-direction:column;gap:3px;}
 .saved-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);transition:all .15s;}
 .saved-item:hover{border-color:var(--blue2);}
@@ -56,9 +59,6 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .saved-name:hover{color:var(--blue3);}
 .saved-del{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;}
 .saved-del:hover{color:var(--red);}
-
-
-/* Recent */
 .rec-list{display:flex;flex-direction:column;gap:2px;}
 .rec-item{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;cursor:pointer;transition:background .15s;}
 .rec-item:hover{background:var(--bg3);}
@@ -67,7 +67,6 @@ nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;h
 .rec-del{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;display:none;}
 .rec-item:hover .rec-del{display:block;}
 .rec-del:hover{color:var(--red);}
-/* Main */
 .main{padding:18px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 17px;}
 .sr{display:flex;gap:7px;}
@@ -97,7 +96,6 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 .opt-chip input{cursor:pointer;}
 .ctx-in{width:50px;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;outline:none;text-align:center;}
 .ctx-in:focus{border-color:var(--blue2);}
-/* Progress */
 .prog-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:13px 17px;display:none;}
 .prog-card.show{display:block;}
 .prog-hdr{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
@@ -114,12 +112,10 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 .warn-msg.show{display:block;}
 .no-match-msg{font-size:12px;color:var(--red);background:var(--red2);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:9px 13px;margin-top:7px;display:none;font-weight:500;}
 .no-match-msg.show{display:block;}
-/* Stats */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
 .sc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 14px;}
 .sl{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
 .sv{font-size:21px;font-weight:600;}
-/* Results */
 .res-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
 .res-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
 .exp-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -154,9 +150,7 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 .ctx-line{opacity:.55;font-size:10px;}
 .hl{color:var(--amber);font-weight:600;background:rgba(245,158,11,.12);border-radius:2px;}
 .empty{text-align:center;padding:44px 20px;color:var(--text4);}
-/* Kbd shortcuts */
 .kbd{display:inline-block;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;color:var(--text3);}
-/* Modals */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;}
 .overlay.show{display:flex;}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:320px;max-width:90vw;}
@@ -167,12 +161,10 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 .s-opt strong{font-size:12px;font-weight:600;display:block;}
 .s-opt span{font-size:10px;color:var(--text3);}
 .m-close{width:100%;margin-top:11px;padding:7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:12px;}
-/* Save modal */
 .save-modal-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:13px;outline:none;margin-bottom:10px;}
 .save-modal-input:focus{border-color:var(--blue2);}
 .save-modal-btn{width:100%;background:var(--blue);color:#fff;border:none;padding:9px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;}
 .save-modal-btn:hover{filter:brightness(1.1);}
-/* File browser */
 .fb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:center;justify-content:center;}
 .fb-overlay.show{display:flex;}
 .fb-modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:560px;max-width:96vw;max-height:80vh;display:flex;flex-direction:column;}
@@ -201,15 +193,92 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 .fb-sel-info{font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .fb-confirm{background:var(--blue);color:#fff;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;}
 .fb-confirm:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── Stats & Metrics pages ─────────────────────────────────────────────────── */
+.page-area{display:none;padding:22px;overflow-y:auto;}
+.page-area.active{display:block;}
+.search-area{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 52px);}
+.search-area .sidebar,.search-area .main{display:flex;flex-direction:column;}
+/* Stats page */
+.stats-pg-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.stats-pg-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:9px;}
+.stats-path{font-size:11px;color:var(--text3);font-family:monospace;margin-top:3px;}
+.stats-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.kpi-val{font-size:26px;font-weight:700;font-family:monospace;}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.chart-card.full{grid-column:1/-1;}
+.chart-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* Bar chart */
+.bar-list{display:flex;flex-direction:column;gap:7px;}
+.bar-row{display:flex;align-items:center;gap:9px;}
+.bar-lbl{font-size:11px;color:var(--text2);min-width:90px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-family:monospace;}
+.bar-track{flex:1;height:14px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+.bar-cnt{font-size:11px;color:var(--text3);min-width:42px;text-align:right;font-family:monospace;}
+/* Timeline chart */
+.timeline-wrap{position:relative;height:110px;}
+.timeline-svg{width:100%;height:100%;}
+/* Empty state */
+.stats-empty{text-align:center;padding:60px 20px;color:var(--text4);}
+.stats-run-btn{display:inline-flex;align-items:center;gap:7px;margin-top:14px;background:var(--blue);color:#fff;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;}
+
+/* Metrics page */
+.metrics-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.metrics-title{font-size:17px;font-weight:700;display:flex;align-items:center;gap:9px;}
+.auto-badge{font-size:10px;background:var(--green3);color:var(--green2);padding:2px 8px;border-radius:4px;border:1px solid var(--green4);}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 16px;}
+.metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.metric-val{font-size:22px;font-weight:700;font-family:monospace;}
+.metric-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+/* Gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.gauge-svg{width:90px;height:50px;}
+.gauge-val{font-size:18px;font-weight:700;font-family:monospace;}
+.gauge-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;}
+/* Mem bar */
+.mem-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:14px;}
+.mem-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;}
+.mem-bars{display:flex;flex-direction:column;gap:8px;}
+.mem-bar-row{display:flex;align-items:center;gap:10px;}
+.mem-bar-lbl{font-size:11px;color:var(--text2);min-width:100px;}
+.mem-bar-track{flex:1;height:10px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.mem-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.mem-bar-val{font-size:11px;color:var(--text3);min-width:60px;text-align:right;font-family:monospace;}
+/* History sparkline */
+.spark-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;}
+.spark-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;}
+.spark-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.spark-lbl{font-size:11px;color:var(--text3);min-width:90px;}
+.spark-svg{flex:1;height:28px;}
+.refresh-btn{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;}
+.refresh-btn:hover{border-color:var(--blue2);}
 </style>
 </head>
 <body>
 <nav>
   <div class="logo">
     <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-    LogSearch Engine <span class="badge" id="vBadge" onclick="showChangelog()" style="cursor:pointer;user-select:none;" title="Click to see changelog">v2.0</span>
+    LogSearch Engine <span class="badge" id="vBadge" onclick="showChangelog()" style="cursor:pointer;user-select:none;" title="Click to see changelog">v3.0</span>
   </div>
-  <div style="display:flex;align-items:center;gap:12px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="nav-tabs">
+      <button class="nav-tab on" id="tabSearch" onclick="showPage('search')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Search
+      </button>
+      <button class="nav-tab" id="tabStats" onclick="showPage('stats')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        File Stats
+      </button>
+      <button class="nav-tab" id="tabMetrics" onclick="showPage('metrics')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Metrics
+      </button>
+    </div>
     <span class="kbd">Ctrl+Enter</span><span style="font-size:11px;color:var(--text3)">search</span>
     <span class="kbd">Esc</span><span style="font-size:11px;color:var(--text3)">cancel</span>
     <div class="online"><span></span>Server Online</div>
@@ -220,7 +289,8 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
   </div>
 </nav>
 
-<div class="layout">
+<!-- ── SEARCH PAGE ─────────────────────────────────────────────────────────── -->
+<div id="pageSearch" class="search-area">
 <aside class="sidebar">
   <div>
     <span class="sec">Log Path (Server)</span>
@@ -273,7 +343,6 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
     <div class="sr">
       <input class="s-in" id="sIn" placeholder="Type keywords and press Enter... (Ctrl+Enter)" onkeydown="if(event.key==='Enter')doSearch()">
       <select class="mode-s" id="modeSel"><option value="OR">OR mode</option><option value="AND">AND mode</option></select>
-      
       <button class="go-btn" id="goBtn" onclick="doSearch()">
         <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
         Search
@@ -289,7 +358,6 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
       <div id="cBadge" class="cache-badge"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>Cache Hit</div>
     </div>
     <div class="opts-row">
-      
       <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         Stop after:
@@ -378,6 +446,101 @@ input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-ca
 </main>
 </div>
 
+<!-- ── FILE STATS PAGE ────────────────────────────────────────────────────── -->
+<div id="pageStats" class="page-area">
+  <div class="stats-pg-hdr">
+    <div>
+      <div class="stats-pg-title">
+        <svg width="18" height="18" fill="none" stroke="var(--blue3)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+        File Statistics
+      </div>
+      <div class="stats-path" id="statsPathLabel">Run a search first, then open this page</div>
+    </div>
+    <button class="refresh-btn" onclick="loadStats()">
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+      Refresh
+    </button>
+  </div>
+  <div id="statsContent">
+    <div class="stats-empty">
+      <svg width="44" height="44" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" style="display:block;margin:0 auto 12px;opacity:.25"><path d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>
+      <p style="font-size:14px;font-weight:500;">No search data yet</p>
+      <p style="font-size:12px;margin-top:6px;">Run a search on the Search page first, then come back here to see statistics</p>
+      <button class="stats-run-btn" onclick="showPage('search')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Go to Search
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── METRICS PAGE ───────────────────────────────────────────────────────── -->
+<div id="pageMetrics" class="page-area">
+  <div class="metrics-hdr">
+    <div>
+      <div class="metrics-title">
+        <svg width="18" height="18" fill="none" stroke="var(--green2)" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Server Metrics
+        <span class="auto-badge" id="metricsAutoLabel">Auto-refresh: ON</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:3px;" id="metricsLastUpdate">Last updated: —</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="refresh-btn" onclick="loadMetrics()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        Refresh Now
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="metrics-grid" id="metricsKpi">
+    <div class="metric-card"><div class="metric-label">Uptime</div><div class="metric-val" id="mUptime">—</div><div class="metric-sub">Since server start</div></div>
+    <div class="metric-card"><div class="metric-label">Goroutines</div><div class="metric-val" id="mGoroutines" style="color:var(--blue3)">—</div><div class="metric-sub">Active goroutines</div></div>
+    <div class="metric-card"><div class="metric-label">GC Runs</div><div class="metric-val" id="mGC" style="color:var(--purple)">—</div><div class="metric-sub" id="mGCPause">Pause: —</div></div>
+    <div class="metric-card"><div class="metric-label">Cache Entries</div><div class="metric-val" id="mCache" style="color:var(--amber)">—</div><div class="metric-sub">Result files cached</div></div>
+  </div>
+
+  <!-- CPU + RAM gauges -->
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:14px;margin-bottom:14px;">
+    <div class="metric-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <div class="gauge-label">CPU Usage</div>
+      <svg class="gauge-svg" viewBox="0 0 100 55" id="cpuGaugeSvg">
+        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="var(--bg3)" stroke-width="10" stroke-linecap="round"/>
+        <path d="M10 50 A40 40 0 0 1 90 50" fill="none" stroke="var(--blue2)" stroke-width="10" stroke-linecap="round" id="cpuArc" stroke-dasharray="126" stroke-dashoffset="126"/>
+      </svg>
+      <div class="gauge-val" id="cpuVal">—%</div>
+    </div>
+    <div class="mem-section" style="margin-bottom:0;">
+      <div class="mem-title">Memory Usage</div>
+      <div class="mem-bars" id="memBars">
+        <div class="mem-bar-row"><span class="mem-bar-lbl">Heap Alloc</span><div class="mem-bar-track"><div class="mem-bar-fill" id="mBarHeapAlloc" style="background:var(--blue2);width:0%"></div></div><span class="mem-bar-val" id="mValHeapAlloc">— MB</span></div>
+        <div class="mem-bar-row"><span class="mem-bar-lbl">Heap In-Use</span><div class="mem-bar-track"><div class="mem-bar-fill" id="mBarHeapInuse" style="background:var(--blue3);width:0%"></div></div><span class="mem-bar-val" id="mValHeapInuse">— MB</span></div>
+        <div class="mem-bar-row"><span class="mem-bar-lbl">Heap Sys</span><div class="mem-bar-track"><div class="mem-bar-fill" id="mBarHeapSys" style="background:var(--purple);width:0%"></div></div><span class="mem-bar-val" id="mValHeapSys">— MB</span></div>
+        <div class="mem-bar-row"><span class="mem-bar-lbl">Stack</span><div class="mem-bar-track"><div class="mem-bar-fill" id="mBarStack" style="background:var(--amber);width:0%"></div></div><span class="mem-bar-val" id="mValStack">— MB</span></div>
+        <div class="mem-bar-row"><span class="mem-bar-lbl">Total Sys</span><div class="mem-bar-track"><div class="mem-bar-fill" id="mBarSys" style="background:var(--green2);width:0%"></div></div><span class="mem-bar-val" id="mValSys">— MB</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sparklines history -->
+  <div class="spark-wrap">
+    <div class="spark-title">History (last 30 polls · updates every 5s)</div>
+    <div class="spark-row">
+      <span class="spark-lbl" style="color:var(--blue3)">CPU %</span>
+      <svg class="spark-svg" id="sparkCpu" viewBox="0 0 300 28" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="spark-row">
+      <span class="spark-lbl" style="color:var(--green2)">Heap MB</span>
+      <svg class="spark-svg" id="sparkMem" viewBox="0 0 300 28" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="spark-row">
+      <span class="spark-lbl" style="color:var(--amber)">Goroutines</span>
+      <svg class="spark-svg" id="sparkGoro" viewBox="0 0 300 28" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+</div>
+
 <!-- Share modal -->
 <div class="overlay" id="shareMod">
   <div class="modal">
@@ -431,6 +594,30 @@ var selPath='';
 var fbCurPath='',fbMode='folder',fbSelectedFile='',fbDirData=null;
 var activeES=null;
 
+// ── Page switching ────────────────────────────────────────────────────────────
+var metricsInterval=null;
+function showPage(p){
+  ['search','stats','metrics'].forEach(function(id){
+    document.getElementById('page'+id.charAt(0).toUpperCase()+id.slice(1)).style.display='none';
+    document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1)).classList.remove('on');
+  });
+  var el=document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1));
+  el.style.display=(p==='search')?'':'block';
+  if(p==='search'){document.getElementById('pageSearch').style.display='';}
+  document.getElementById('tab'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('on');
+  // Auto-load on switch
+  if(p==='stats'&&curQ){loadStats();}
+  if(p==='metrics'){
+    loadMetrics();
+    if(!metricsInterval)metricsInterval=setInterval(loadMetrics,5000);
+  } else {
+    if(metricsInterval){clearInterval(metricsInterval);metricsInterval=null;}
+  }
+}
+// Init: show only search
+document.getElementById('pageStats').style.display='none';
+document.getElementById('pageMetrics').style.display='none';
+
 // Theme
 var html=document.documentElement;
 html.setAttribute('data-theme',localStorage.getItem('ls_th')||'dark');
@@ -438,7 +625,6 @@ updTh();
 function togTheme(){var t=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',t);localStorage.setItem('ls_th',t);updTh();}
 function updTh(){var t=html.getAttribute('data-theme');document.getElementById('bDark').classList.toggle('on',t==='dark');document.getElementById('bLight').classList.toggle('on',t==='light');}
 
-// Keyboard shortcuts
 document.addEventListener('keydown',function(e){
   if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doSearch();}
   if(e.key==='Escape'){cancelSearch();closeBrowser();closeShare();document.getElementById('saveMod').classList.remove('show');}
@@ -534,7 +720,6 @@ function renderKw(){
   document.getElementById('exTags').innerHTML=excludeKws.map(function(k){return '<div class="kw-tag exclude">NOT: '+k+'<button onclick="remEx(\''+k+'\')">×</button></div>';}).join('');
 }
 
-
 // ── Search ────────────────────────────────────────────────────────────────────
 function cancelSearch(){
   if(activeES){activeES.close();activeES=null;}
@@ -567,7 +752,8 @@ function doSearch(){
   btn.disabled=true;btn.innerHTML='<div class="spin" style="width:12px;height:12px;border-width:2px;"></div> Searching...';
   document.getElementById('cancelBtn').classList.add('show');
   document.getElementById('cBadge').classList.remove('show');
-  var _db2=document.getElementById('dlBtn');_db2.classList.add('hide');_db2.style.display='none';;document.getElementById('shBtn').classList.add('hide');
+  var _db2=document.getElementById('dlBtn');_db2.classList.add('hide');_db2.style.display='none';
+  document.getElementById('shBtn').classList.add('hide');
   document.getElementById('resBox').innerHTML='';document.getElementById('pagBar').classList.remove('show');document.getElementById('pgInfo').textContent='';
   document.getElementById('warnMsg').classList.remove('show');document.getElementById('noMatchMsg').classList.remove('show');
   resetProg();
@@ -581,11 +767,19 @@ function doSearch(){
   
   es.addEventListener('progress',function(e){
     var d=JSON.parse(e.data);
-    if(d.files_total>0){document.getElementById('pFiles').textContent=(d.files_searched||0)+'/'+d.files_total;document.getElementById('pBar').style.width=(d.percent||0)+'%';}
-    if(d.lines_scanned!==undefined)document.getElementById('pLines').textContent=fmtNum(d.lines_scanned);
-    if(d.matches_found!==undefined)document.getElementById('pMatches').textContent=d.matches_found;
-    if(d.elapsed_ms!==undefined)document.getElementById('pTime').textContent=d.elapsed_ms+'ms';
-    if(d.message)document.getElementById('pMsg').textContent=d.message;
+    window._lastProgData=d;
+    if(!window._progRaf){
+      window._progRaf=requestAnimationFrame(function(){
+        var d=window._lastProgData;
+        window._progRaf=null;
+        if(!d)return;
+        if(d.files_total>0){document.getElementById('pFiles').textContent=(d.files_searched||0)+'/'+d.files_total;document.getElementById('pBar').style.width=(d.percent||0)+'%';}
+        if(d.lines_scanned!==undefined)document.getElementById('pLines').textContent=fmtNum(d.lines_scanned);
+        if(d.matches_found!==undefined)document.getElementById('pMatches').textContent=d.matches_found;
+        if(d.elapsed_ms!==undefined)document.getElementById('pTime').textContent=d.elapsed_ms+'ms';
+        if(d.message)document.getElementById('pMsg').textContent=d.message;
+      });
+    }
   });
 
   es.addEventListener('cache_hit',function(e){searchDone=true;activeES=null;es.close();finish(JSON.parse(e.data),true);});
@@ -655,7 +849,6 @@ async function fetchPage(pg){
     var tot=d.total_matches||0;
     var s=(curPage-1)*pgSz+1,e2=Math.min(curPage*pgSz,tot);
     document.getElementById('pgInfo').textContent=tot>0?'Showing '+s.toLocaleString()+'-'+e2.toLocaleString()+' of '+tot.toLocaleString():'';
-    // Update download button if zip now ready
     if(d.total_matches>0){var _db=document.getElementById('dlBtn');_db.classList.remove('hide');_db.style.display='flex';}
     renderPag(curPage,totPages);
     renderRes(d.matches||[],curQ.keywords||[],curQ.regex_pattern||'');
@@ -683,7 +876,6 @@ function renderRes(matches,kwList,regexPat){
     var copyPath=m.file_path||'';
 
     if(m.context_lines&&m.context_lines.length>1){
-      // Context lines view
       var ctxHtml='';
       var matchLineNum=m.line_number;
       var ctxStart=m.context_start||1;
@@ -734,13 +926,11 @@ async function handleDL(scope){
   if(curFmt==='pdf'){await dlPDF(scope);return;}
   var ep={csv:'/download/csv',txt:'/download/txt',json:'/download/json'}[curFmt];
   if(!ep)return;
-  // Find clicked button and disable it
   var btns=document.querySelectorAll('#dlBtn button');
   btns.forEach(function(b){b.disabled=true;b.textContent='...'});
   try{
     var body,suffix,filename;
     if(scope==='page'){
-      // Fetch current page from backend freshly
       var pr=await fetch('/search/page?page='+curPage+'&page_size='+pgSz,{
         method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)
       });
@@ -768,7 +958,7 @@ async function handleDL(scope){
 }
 
 async function dlPDF(){
-  var btn=document.querySelector('#dlBtn button[onclick*="dlPDF"]')||document.querySelector('#dlBtn button:last-child');
+  var btn=document.querySelector('#dlBtn button:last-child');
   var origHTML=btn?btn.innerHTML:'';
   if(btn){btn.textContent='Preparing...';btn.disabled=true;}
   try{
@@ -782,8 +972,7 @@ async function dlPDF(){
     h+='</body></html>';
     pw.document.write(h);pw.document.close();setTimeout(function(){pw.print();},600);
   }catch(e){alert('PDF error: '+e.message);}
-  finally{if(btn){btn.disabled=false;btn.innerHTML='<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Download';}
-}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Download';}}
 }
 
 // ── Share ─────────────────────────────────────────────────────────────────────
@@ -798,12 +987,176 @@ function delRec(i,ev){ev.stopPropagation();rec.splice(i,1);localStorage.setItem(
 function renderRec(){var el=document.getElementById('recList');if(!rec.length){el.innerHTML='<div style="font-size:11px;color:var(--text4);padding:4px 6px;">No recent searches</div>';return;}el.innerHTML=rec.map(function(s,i){return '<div class="rec-item" onclick="loadRec('+i+')"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span class="rec-txt">'+(s.kw||[]).join(', ')+' · '+s.mode+' · '+s.cnt+'</span><span class="rec-time">'+s.time+'</span><button class="rec-del" onclick="delRec('+i+',event)">×</button></div>';}).join('');}
 function loadRec(i){var s=rec[i];kws=[].concat(s.kw||[]);renderKw();document.getElementById('sIn').value=(s.kw||[]).join(' ');document.getElementById('modeSel').value=s.mode||'OR';doSearch();}
 
+// ── FILE STATS ────────────────────────────────────────────────────────────────
+var COLORS=['#3b82f6','#22c55e','#f59e0b','#f87171','#a78bfa','#fb923c','#60a5fa','#4ade80','#fbbf24','#c084fc'];
+
+async function loadStats(){
+  if(!curQ){
+    document.getElementById('statsContent').innerHTML='<div class="stats-empty"><p style="font-size:14px;font-weight:500;">No search data yet</p><p style="font-size:12px;margin-top:6px;">Run a search first</p><button class="stats-run-btn" onclick="showPage(\'search\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Go to Search</button></div>';
+    return;
+  }
+  document.getElementById('statsPathLabel').textContent='Path: '+(curQ.search_path||'')+'  ·  Keywords: '+(curQ.keywords||[]).join(', ');
+  document.getElementById('statsContent').innerHTML='<div class="stats-empty"><div class="spin" style="margin:0 auto;"></div><p style="margin-top:12px;font-size:13px;">Analysing results...</p></div>';
+  try{
+    var r=await fetch('/stats/file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)});
+    var d=await r.json();
+    if(d.error){document.getElementById('statsContent').innerHTML='<div class="stats-empty" style="color:var(--red)">'+d.error+'</div>';return;}
+    renderStats(d);
+  }catch(e){document.getElementById('statsContent').innerHTML='<div class="stats-empty" style="color:var(--red)">'+e.message+'</div>';}
+}
+
+function renderStats(d){
+  var h='';
+  // KPIs
+  h+='<div class="stats-kpi">';
+  h+=kpiCard('Total Matches',(d.total_matches||0).toLocaleString(),'var(--green2)');
+  h+=kpiCard('Files Searched',(d.total_files||0).toLocaleString(),'var(--blue3)');
+  h+=kpiCard('Unique Error Codes',(d.error_codes||[]).length,'var(--amber)');
+  h+='</div>';
+  h+='<div class="charts-grid">';
+  // Error codes bar
+  h+=barChartCard('🔴 Top Error Codes',d.error_codes||[]);
+  // API endpoints bar
+  h+=barChartCard('🌐 Top API Endpoints',d.api_endpoints||[]);
+  // Banks bar
+  if((d.banks||[]).length)h+=barChartCard('🏦 Banks Breakdown',d.banks||[]);
+  // Top users bar
+  if((d.top_users||[]).length)h+=barChartCard('👤 Top Users (by errors)',d.top_users||[]);
+  // Timeline full width
+  if((d.timeline||[]).length){
+    h+='<div class="chart-card full"><div class="chart-title"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Error Frequency by Hour</div>';
+    h+='<div class="timeline-wrap" id="tlWrap">'+timelineSvg(d.timeline)+'</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  document.getElementById('statsContent').innerHTML=h;
+  // Animate bars
+  setTimeout(function(){
+    document.querySelectorAll('.bar-fill[data-w]').forEach(function(el){el.style.width=el.getAttribute('data-w')+'%';});
+  },50);
+}
+
+function kpiCard(label,val,color){
+  return '<div class="kpi-card"><div class="kpi-label">'+label+'</div><div class="kpi-val" style="color:'+color+'">'+val+'</div></div>';
+}
+
+function barChartCard(title,items){
+  if(!items||!items.length)return'';
+  var max=items[0].count||1;
+  var h='<div class="chart-card"><div class="chart-title">'+title+'</div><div class="bar-list">';
+  items.forEach(function(item,i){
+    var pct=Math.round((item.count/max)*100);
+    var col=COLORS[i%COLORS.length];
+    h+='<div class="bar-row"><span class="bar-lbl" title="'+escHtml(item.label)+'">'+escHtml(item.label)+'</span><div class="bar-track"><div class="bar-fill" data-w="'+pct+'" style="width:0%;background:'+col+'"></div></div><span class="bar-cnt">'+item.count.toLocaleString()+'</span></div>';
+  });
+  h+='</div></div>';
+  return h;
+}
+
+function timelineSvg(timeline){
+  var W=600,H=90,pad={l:36,r:10,t:8,b:24};
+  var vals=timeline.map(function(t){return t.count;});
+  var maxV=Math.max.apply(null,vals)||1;
+  var pts=timeline.map(function(t,i){
+    var x=pad.l+(i/(timeline.length-1||1))*(W-pad.l-pad.r);
+    var y=pad.t+(1-t.count/maxV)*(H-pad.t-pad.b);
+    return {x:x,y:y,label:t.label,count:t.count};
+  });
+  var path=pts.map(function(p,i){return (i===0?'M':'L')+p.x.toFixed(1)+','+p.y.toFixed(1);}).join(' ');
+  var area=path+' L'+pts[pts.length-1].x.toFixed(1)+','+(H-pad.b)+' L'+pts[0].x.toFixed(1)+','+(H-pad.b)+' Z';
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:'+H+'px;" xmlns="http://www.w3.org/2000/svg">';
+  s+='<defs><linearGradient id="tlGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--blue2)" stop-opacity="0.35"/><stop offset="100%" stop-color="var(--blue2)" stop-opacity="0.02"/></linearGradient></defs>';
+  s+='<path d="'+area+'" fill="url(#tlGrad)"/>';
+  s+='<path d="'+path+'" fill="none" stroke="var(--blue2)" stroke-width="2" stroke-linejoin="round"/>';
+  pts.forEach(function(p){
+    s+='<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="3" fill="var(--blue2)"/>';
+    s+='<text x="'+p.x.toFixed(1)+'" y="'+(H-pad.b+14)+'" text-anchor="middle" font-size="9" fill="var(--text3)">'+p.label+'</text>';
+  });
+  // Y-axis label
+  s+='<text x="'+pad.l+'" y="'+(pad.t+4)+'" text-anchor="end" font-size="9" fill="var(--text3)">'+maxV+'</text>';
+  s+='</svg>';
+  return s;
+}
+
+// ── METRICS ────────────────────────────────────────────────────────────────────
+var sparkHistory={cpu:[],mem:[],goro:[]};
+var SPARK_MAX=30;
+
+async function loadMetrics(){
+  try{
+    var r=await fetch('/metrics');
+    var d=await r.json();
+    // KPI
+    document.getElementById('mUptime').textContent=d.uptime_human||'—';
+    document.getElementById('mGoroutines').textContent=d.goroutines||'—';
+    document.getElementById('mGC').textContent=d.num_gc||'—';
+    document.getElementById('mGCPause').textContent='Pause: '+(d.gc_pause_ms||'—')+'ms';
+    document.getElementById('mCache').textContent=d.cache_entries||'0';
+    // CPU gauge
+    var cpu=parseFloat(d.cpu_percent)||0;
+    document.getElementById('cpuVal').textContent=cpu.toFixed(1)+'%';
+    var cpuColor=cpu>80?'var(--red)':cpu>50?'var(--amber)':'var(--blue2)';
+    var arc=document.getElementById('cpuArc');
+    var totalLen=126;
+    var offset=totalLen-(cpu/100)*totalLen;
+    arc.setAttribute('stroke-dashoffset',offset.toFixed(1));
+    arc.setAttribute('stroke',cpuColor);
+    document.getElementById('cpuVal').style.color=cpuColor;
+    // Mem bars
+    var sysMb=parseFloat(d.sys_mb)||1;
+    setMemBar('HeapAlloc',d.heap_alloc_mb,sysMb,'var(--blue2)');
+    setMemBar('HeapInuse',d.heap_inuse_mb,sysMb,'var(--blue3)');
+    setMemBar('HeapSys',d.heap_sys_mb,sysMb,'var(--purple)');
+    setMemBar('Stack',d.stack_inuse_mb,sysMb,'var(--amber)');
+    setMemBar('Sys',d.sys_mb,sysMb,'var(--green2)');
+    // Sparklines
+    sparkHistory.cpu.push(cpu);
+    sparkHistory.mem.push(parseFloat(d.heap_alloc_mb)||0);
+    sparkHistory.goro.push(d.goroutines||0);
+    if(sparkHistory.cpu.length>SPARK_MAX)sparkHistory.cpu.shift();
+    if(sparkHistory.mem.length>SPARK_MAX)sparkHistory.mem.shift();
+    if(sparkHistory.goro.length>SPARK_MAX)sparkHistory.goro.shift();
+    drawSparkline('sparkCpu',sparkHistory.cpu,'var(--blue3)');
+    drawSparkline('sparkMem',sparkHistory.mem,'var(--green2)');
+    drawSparkline('sparkGoro',sparkHistory.goro,'var(--amber)');
+    document.getElementById('metricsLastUpdate').textContent='Last updated: '+new Date().toLocaleTimeString();
+  }catch(e){
+    document.getElementById('metricsLastUpdate').textContent='Error: '+e.message;
+  }
+}
+
+function setMemBar(id,valStr,maxMb,color){
+  var val=parseFloat(valStr)||0;
+  var pct=Math.min(100,Math.round((val/maxMb)*100));
+  var bar=document.getElementById('mBar'+id);
+  var valEl=document.getElementById('mVal'+id);
+  if(bar){bar.style.width=pct+'%';bar.style.background=color;}
+  if(valEl)valEl.textContent=val.toFixed(2)+' MB';
+}
+
+function drawSparkline(svgId,data,color){
+  var svg=document.getElementById(svgId);
+  if(!svg||!data.length)return;
+  var W=300,H=28,pad=2;
+  var mn=Math.min.apply(null,data),mx=Math.max.apply(null,data);
+  var rng=mx-mn||1;
+  var pts=data.map(function(v,i){
+    var x=pad+(i/(Math.max(data.length-1,1)))*(W-pad*2);
+    var y=pad+(1-(v-mn)/rng)*(H-pad*2);
+    return x.toFixed(1)+','+y.toFixed(1);
+  });
+  var path='M'+pts.join(' L');
+  svg.innerHTML='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round"/>'
+    +'<circle cx="'+pts[pts.length-1].split(',')[0]+'" cy="'+pts[pts.length-1].split(',')[1]+'" r="2.5" fill="'+color+'"/>';
+}
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function fmtBytes(b){if(!b)return'-';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';if(b<1073741824)return(b/1048576).toFixed(2)+' MB';return(b/1073741824).toFixed(2)+' GB';}
 function fmtNum(n){if(!n)return'0';if(n<1000)return''+n;if(n<1000000)return(n/1000).toFixed(1)+'K';return(n/1000000).toFixed(1)+'M';}
 function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escRe(s){return(s||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
 </script>
+
 <!-- Changelog Modal -->
 <div id="changelogModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);" onclick="if(event.target===this)closeChangelog()">
   <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:560px;max-width:95vw;max-height:80vh;overflow-y:auto;padding:28px 32px;">
@@ -814,48 +1167,29 @@ function escRe(s){return(s||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
       </div>
       <button onclick="closeChangelog()" style="background:var(--bg4);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">×</button>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:18px;">
-
       <div>
         <div style="font-size:11px;font-weight:600;color:var(--blue3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">New Features</div>
         <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text2);">
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Exclude Keywords</b> — filter out lines containing specific words from results</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Regex Search</b> — search using regular expressions instead of keywords</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Case Sensitive Mode</b> — toggle exact case matching for keyword searches</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Context Lines</b> — see N lines before and after each match for more context</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Saved Searches</b> — save and reload your frequently used search configurations</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">CSV &amp; JSON Download</b> — export results in CSV or JSON format in addition to ZIP and TXT</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">File Stats Page</b> — error breakdown charts, API endpoints, banks, top users, hourly timeline</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Metrics Page</b> — live CPU%, RAM usage, goroutines, GC stats with sparkline history</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Exclude Keywords</b> — filter out lines containing specific words</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Regex Search</b> — search using regular expressions</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Context Lines</b> — see N lines before/after each match</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">CSV &amp; JSON Download</b> — export in multiple formats</span></div>
         </div>
       </div>
-
-      <div style="border-top:1px solid var(--border);padding-top:16px;">
-        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Fixes &amp; Improvements</div>
-        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text2);">
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">50,000 match cap</b> — search stops at 50k matches to prevent disk full and server crash</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">5s no-match timeout</b> — if keyword not found in 5 seconds, search stops with a clear message</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Date filter fixed</b> — results now correctly respect start and end date/time range</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Faster result rendering</b> — results appear immediately after search completes</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Line Range removed</b> — replaced with smarter global match cap (no user input needed)</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">ZIP export async</b> — search results show instantly, ZIP builds in background</span></div>
-          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Search cancellation</b> — ongoing search can be cancelled cleanly without server crash</span></div>
-        </div>
-      </div>
-
       <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
         <span style="font-size:11px;color:var(--text4);">v1.0 → v2.0</span>
         <button onclick="closeChangelog()" style="background:var(--blue);color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">Close</button>
       </div>
-
     </div>
   </div>
 </div>
-
 <script>
 function showChangelog(){document.getElementById('changelogModal').style.display='block';}
 function closeChangelog(){document.getElementById('changelogModal').style.display='none';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeChangelog();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeChangelog();});
 </script>
-
 </body>
 </html>

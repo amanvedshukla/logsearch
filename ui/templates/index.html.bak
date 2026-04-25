@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LogSearch Engine</title>
+<style>
+:root[data-theme="dark"]{--bg:#0f1117;--bg2:#0a0d12;--bg3:#0d1117;--bg4:#111827;--border:#1e293b;--border2:#1e3a5f;--text:#e2e8f0;--text2:#94a3b8;--text3:#475569;--text4:#374151;--blue:#2563eb;--blue2:#3b82f6;--blue3:#60a5fa;--blue4:#1e3a5f;--green:#22c55e;--green2:#4ade80;--green3:#052e16;--green4:#166534;--amber:#f59e0b;--orange:#fb923c;--orange2:#422006;--red:#f87171;--red2:#2d0a0a;--card:#0d1117;--nav:#0a0d12;--purple:#a78bfa;--purple2:#1e1b4b;}
+:root[data-theme="light"]{--bg:#f8fafc;--bg2:#fff;--bg3:#f1f5f9;--bg4:#e2e8f0;--border:#e2e8f0;--border2:#bfdbfe;--text:#0f172a;--text2:#475569;--text3:#94a3b8;--text4:#cbd5e1;--blue:#2563eb;--blue2:#3b82f6;--blue3:#1d4ed8;--blue4:#dbeafe;--green:#16a34a;--green2:#15803d;--green3:#dcfce7;--green4:#bbf7d0;--amber:#d97706;--orange:#ea580c;--orange2:#ffedd5;--red:#dc2626;--red2:#fee2e2;--card:#fff;--nav:#fff;--purple:#7c3aed;--purple2:#ede9fe;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+nav{background:var(--nav);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.logo{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.badge{font-size:10px;background:var(--blue4);color:var(--blue3);padding:2px 7px;border-radius:4px;}
+.online{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green2);}
+.online span{width:7px;height:7px;background:var(--green);border-radius:50%;display:inline-block;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.th-toggle{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px;display:flex;cursor:pointer;gap:2px;margin-left:12px;}
+.th-btn{width:28px;height:24px;border-radius:16px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;color:var(--text3);font-size:12px;}
+.th-btn.on{background:var(--blue);color:#fff;}
+.layout{display:grid;grid-template-columns:268px 1fr;min-height:calc(100vh - 52px);}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:14px 12px;display:flex;flex-direction:column;gap:16px;overflow-y:auto;}
+.sec{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 4px;display:block;margin-bottom:5px;}
+.path-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px;}
+.cur-path{font-family:monospace;font-size:11px;color:var(--blue3);word-break:break-all;min-height:16px;margin-bottom:7px;padding:3px 6px;background:var(--bg4);border-radius:4px;}
+.browse-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--blue4);color:var(--blue3);border:none;padding:7px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;}
+.browse-btn:hover{background:var(--blue);color:#fff;}
+.gz-count{font-size:11px;color:var(--green2);margin-top:4px;min-height:14px;}
+.kw-tags{display:flex;flex-wrap:wrap;gap:4px;min-height:20px;}
+.kw-tag{display:flex;align-items:center;gap:3px;background:var(--blue4);color:var(--blue3);padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.kw-tag.exclude{background:var(--red2);color:var(--red);}
+.kw-tag button{background:none;border:none;cursor:pointer;font-size:13px;line-height:1;color:inherit;opacity:.7;}
+.kw-tag button:hover{opacity:1;}
+.kw-row{display:flex;gap:5px;margin-top:6px;}
+.kw-in{flex:1;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:6px;font-size:12px;outline:none;}
+.kw-in:focus{border-color:var(--blue2);}
+.kw-in::placeholder{color:var(--text4);}
+.add-btn{background:var(--blue4);color:var(--blue3);border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;}
+.add-btn:hover{background:var(--blue);color:#fff;}
+.add-btn.excl{background:var(--red2);color:var(--red);}
+.add-btn.excl:hover{background:#7f1d1d;color:#fca5a5;}
+/* Regex */
+.regex-row{display:flex;flex-direction:column;gap:5px;padding:9px 11px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;}
+.regex-hdr{display:flex;align-items:center;justify-content:space-between;}
+.regex-lbl{font-size:11px;color:var(--purple);font-weight:600;display:flex;align-items:center;gap:5px;}
+.regex-toggle{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);}
+.regex-toggle input{cursor:pointer;}
+.regex-in{width:100%;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:5px;font-size:11px;font-family:monospace;outline:none;}
+.regex-in:focus{border-color:var(--purple);}
+.regex-in::placeholder{color:var(--text4);}
+/* Saved searches */
+.saved-list{display:flex;flex-direction:column;gap:3px;}
+.saved-item{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);transition:all .15s;}
+.saved-item:hover{border-color:var(--blue2);}
+.saved-name{font-size:12px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.saved-name:hover{color:var(--blue3);}
+.saved-del{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;line-height:1;padding:0 2px;}
+.saved-del:hover{color:var(--red);}
+
+
+/* Recent */
+.rec-list{display:flex;flex-direction:column;gap:2px;}
+.rec-item{display:flex;align-items:center;gap:6px;padding:5px 7px;border-radius:6px;cursor:pointer;transition:background .15s;}
+.rec-item:hover{background:var(--bg3);}
+.rec-txt{font-size:11px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.rec-time{font-size:10px;color:var(--text4);}
+.rec-del{background:none;border:none;color:var(--text4);cursor:pointer;font-size:13px;display:none;}
+.rec-item:hover .rec-del{display:block;}
+.rec-del:hover{color:var(--red);}
+/* Main */
+.main{padding:18px 22px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 17px;}
+.sr{display:flex;gap:7px;}
+.s-in{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:9px 13px;border-radius:8px;font-size:14px;outline:none;}
+.s-in:focus{border-color:var(--blue2);}
+.s-in::placeholder{color:var(--text4);}
+.mode-s{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:9px;border-radius:8px;font-size:13px;outline:none;cursor:pointer;}
+.go-btn{background:var(--blue);color:#fff;border:none;padding:9px 16px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.go-btn:hover{filter:brightness(1.1);}
+.go-btn:disabled{opacity:.5;cursor:not-allowed;}
+.cancel-btn{background:var(--red2);color:var(--red);border:1px solid rgba(248,113,113,.3);padding:9px 14px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;display:none;white-space:nowrap;}
+.cancel-btn.show{display:flex;align-items:center;gap:5px;}
+.cancel-btn:hover{background:#450a0a;}
+.tr{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;align-items:flex-end;}
+.dg{display:flex;flex-direction:column;gap:3px;flex:1;min-width:165px;}
+.dlbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.di{display:flex;gap:4px;}
+.d-in{flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:7px;font-size:12px;outline:none;}
+.d-in:focus{border-color:var(--blue2);}
+input[type=date]::-webkit-calendar-picker-indicator,input[type=time]::-webkit-calendar-picker-indicator{filter:invert(.5) sepia(1) saturate(3) hue-rotate(190deg);cursor:pointer;}
+:root[data-theme="light"] input[type=date]::-webkit-calendar-picker-indicator,:root[data-theme="light"] input[type=time]::-webkit-calendar-picker-indicator{filter:none;}
+.cache-badge{display:none;align-items:center;gap:5px;background:var(--green3);color:var(--green2);border:1px solid var(--green4);padding:4px 9px;border-radius:6px;font-size:11px;font-weight:500;}
+.cache-badge.show{display:flex;}
+.opts-row{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap;align-items:center;}
+.opt-chip{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.opt-chip:hover{border-color:var(--blue2);}
+.opt-chip input{cursor:pointer;}
+.ctx-in{width:50px;background:var(--bg4);border:1px solid var(--border);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;outline:none;text-align:center;}
+.ctx-in:focus{border-color:var(--blue2);}
+/* Progress */
+.prog-card{background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:13px 17px;display:none;}
+.prog-card.show{display:block;}
+.prog-hdr{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.spin{width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--blue2);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.pg-s{background:var(--bg3);border-radius:6px;padding:8px 11px;}
+.pg-l{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;}
+.pg-v{font-size:17px;font-weight:700;font-family:monospace;}
+.pb-wrap{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.pb{height:100%;background:var(--blue2);border-radius:2px;transition:width .3s;width:0%;}
+.prog-msg{font-size:11px;color:var(--text3);margin-top:6px;font-family:monospace;}
+.warn-msg{font-size:12px;color:var(--amber);background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:5px;padding:6px 10px;margin-top:7px;display:none;}
+.warn-msg.show{display:block;}
+.no-match-msg{font-size:12px;color:var(--red);background:var(--red2);border:1px solid rgba(248,113,113,.3);border-radius:6px;padding:9px 13px;margin-top:7px;display:none;font-weight:500;}
+.no-match-msg.show{display:block;}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 14px;}
+.sl{font-size:10px;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.sv{font-size:21px;font-weight:600;}
+/* Results */
+.res-hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;}
+.res-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.exp-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.exp-grp{display:flex;align-items:center;gap:3px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:3px 5px;}
+.exp-lbl{font-size:10px;color:var(--text3);padding-left:3px;}
+.fmt-btn{background:transparent;border:none;color:var(--text3);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:500;}
+.fmt-btn:hover{color:var(--text);background:var(--bg4);}
+.fmt-btn.on{background:var(--blue);color:#fff;}
+.dl-btn,.sh-btn{display:flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border2);padding:5px 10px;border-radius:6px;font-size:11px;font-weight:500;cursor:pointer;color:var(--blue3);}
+.dl-btn:hover,.sh-btn:hover{background:var(--blue4);}
+.dl-btn.hide,.sh-btn.hide{display:none;}
+.sh-btn{color:var(--text2);border-color:var(--border);}
+.pg-wrap{display:flex;align-items:center;gap:4px;}
+.pg-wrap span{font-size:11px;color:var(--text3);}
+.pg-sel{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 6px;border-radius:5px;font-size:11px;outline:none;cursor:pointer;}
+.pag-bar{display:none;align-items:center;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.pag-bar.show{display:flex;}
+.p-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:4px 9px;border-radius:5px;cursor:pointer;font-size:11px;}
+.p-btn:hover{border-color:var(--blue2);}
+.p-nums{display:flex;gap:3px;flex-wrap:wrap;}
+.r-list{display:flex;flex-direction:column;gap:7px;margin-top:10px;}
+.ri{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;transition:border .15s;}
+.ri:hover{border-color:var(--blue2);}
+.ri-meta{display:flex;align-items:center;gap:7px;margin-bottom:6px;flex-wrap:wrap;}
+.ri-file{font-size:11px;color:var(--blue3);font-weight:500;display:flex;align-items:center;gap:3px;}
+.ln{font-size:10px;color:var(--text3);background:var(--bg3);padding:2px 6px;border-radius:3px;}
+.tt{font-size:10px;background:var(--orange2);color:var(--orange);padding:2px 6px;border-radius:3px;}
+.copy-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;padding:2px 6px;border-radius:3px;margin-left:auto;}
+.copy-btn:hover{background:var(--bg3);color:var(--blue3);}
+.ri-txt{font-family:'Cascadia Code','Consolas',monospace;font-size:11px;color:var(--text2);background:var(--bg2);padding:7px 10px;border-radius:5px;overflow-x:auto;white-space:pre;line-height:1.6;border:1px solid var(--border);}
+.ri-txt.match-line{border-left:3px solid var(--blue2);}
+.ctx-line{opacity:.55;font-size:10px;}
+.hl{color:var(--amber);font-weight:600;background:rgba(245,158,11,.12);border-radius:2px;}
+.empty{text-align:center;padding:44px 20px;color:var(--text4);}
+/* Kbd shortcuts */
+.kbd{display:inline-block;background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10px;font-family:monospace;color:var(--text3);}
+/* Modals */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;width:320px;max-width:90vw;}
+.m-title{font-size:14px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;gap:7px;}
+.s-opts{display:flex;flex-direction:column;gap:8px;}
+.s-opt{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text);}
+.s-opt:hover{border-color:var(--blue2);background:var(--bg4);}
+.s-opt strong{font-size:12px;font-weight:600;display:block;}
+.s-opt span{font-size:10px;color:var(--text3);}
+.m-close{width:100%;margin-top:11px;padding:7px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:12px;}
+/* Save modal */
+.save-modal-input{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:13px;outline:none;margin-bottom:10px;}
+.save-modal-input:focus{border-color:var(--blue2);}
+.save-modal-btn{width:100%;background:var(--blue);color:#fff;border:none;padding:9px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;}
+.save-modal-btn:hover{filter:brightness(1.1);}
+/* File browser */
+.fb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:center;justify-content:center;}
+.fb-overlay.show{display:flex;}
+.fb-modal{background:var(--card);border:1px solid var(--border);border-radius:12px;width:560px;max-width:96vw;max-height:80vh;display:flex;flex-direction:column;}
+.fb-hdr{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.fb-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:7px;}
+.fb-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;}
+.fb-close:hover{color:var(--text);}
+.fb-toolbar{padding:7px 13px;border-bottom:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.fb-path-display{font-family:monospace;font-size:10px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fb-mode-tabs{display:flex;gap:3px;flex-shrink:0;}
+.fb-mode-tab{padding:3px 9px;border-radius:4px;border:1px solid var(--border);background:var(--bg4);color:var(--text3);font-size:11px;cursor:pointer;font-weight:500;}
+.fb-mode-tab.on{background:var(--blue4);color:var(--blue3);border-color:var(--blue2);}
+.fb-body{flex:1;overflow-y:auto;padding:5px 7px;min-height:0;}
+.fb-loading{text-align:center;padding:24px;color:var(--text3);font-size:12px;}
+.fb-entry{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:6px;cursor:pointer;transition:background .1s;user-select:none;}
+.fb-entry:hover{background:var(--bg3);}
+.fb-entry.selected{background:rgba(37,99,235,.15);border:1px solid var(--blue2);}
+.fb-entry.dir{color:var(--blue3);}
+.fb-entry.gz-file{color:var(--green2);}
+.fb-entry-name{font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fb-entry-meta{font-size:10px;color:var(--text3);flex-shrink:0;}
+.fb-entry-badge{font-size:9px;background:var(--green3);color:var(--green2);padding:1px 5px;border-radius:2px;flex-shrink:0;}
+.fb-back{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:6px;cursor:pointer;color:var(--amber);font-size:12px;font-weight:500;}
+.fb-back:hover{background:var(--bg3);}
+.fb-footer{padding:10px 15px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:9px;flex-shrink:0;}
+.fb-sel-info{font-size:11px;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.fb-confirm{background:var(--blue);color:#fff;border:none;padding:7px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;}
+.fb-confirm:disabled{opacity:.35;cursor:not-allowed;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    LogSearch Engine <span class="badge" id="vBadge" onclick="showChangelog()" style="cursor:pointer;user-select:none;" title="Click to see changelog">v2.0</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="kbd">Ctrl+Enter</span><span style="font-size:11px;color:var(--text3)">search</span>
+    <span class="kbd">Esc</span><span style="font-size:11px;color:var(--text3)">cancel</span>
+    <div class="online"><span></span>Server Online</div>
+    <div class="th-toggle" onclick="togTheme()">
+      <button class="th-btn" id="bDark">🌙</button>
+      <button class="th-btn" id="bLight">☀️</button>
+    </div>
+  </div>
+</nav>
+
+<div class="layout">
+<aside class="sidebar">
+  <div>
+    <span class="sec">Log Path (Server)</span>
+    <div class="path-sel">
+      <div class="cur-path" id="curPath">Nothing selected</div>
+      <button class="browse-btn" onclick="openBrowser('/')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>
+        Browse Filesystem...
+      </button>
+      <div class="gz-count" id="gzCount"></div>
+    </div>
+  </div>
+
+  <div>
+    <span class="sec">Keywords</span>
+    <div class="kw-tags" id="kwTags"></div>
+    <div class="kw-tags" id="exTags" style="margin-top:4px;"></div>
+    <div class="kw-row">
+      <input class="kw-in" id="kwIn" placeholder="Include keyword..." onkeydown="if(event.key==='Enter')addKw()">
+      <button class="add-btn" onclick="addKw()" title="Add include keyword">+</button>
+      <button class="add-btn excl" onclick="addExclude()" title="Add exclude keyword (NOT)">−</button>
+    </div>
+  </div>
+
+  <div>
+    <span class="sec">Regex Search</span>
+    <div class="regex-row">
+      <div class="regex-hdr">
+        <span class="regex-lbl">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
+          Pattern
+        </span>
+        <label class="regex-toggle"><input type="checkbox" id="caseSensitive"> Case sensitive</label>
+      </div>
+      <input class="regex-in" id="regexIn" placeholder="e.g. ERROR.*timeout|FAIL\d+" onkeydown="if(event.key==='Enter')doSearch()">
+      <div style="font-size:10px;color:var(--text3);margin-top:3px;">Leave empty to use keywords above</div>
+    </div>
+  </div>
+
+  <div>
+    <span class="sec">Recent Searches</span>
+    <div class="rec-list" id="recList">
+      <div style="font-size:11px;color:var(--text4);padding:4px 6px;">No recent searches</div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="card">
+    <div class="sr">
+      <input class="s-in" id="sIn" placeholder="Type keywords and press Enter... (Ctrl+Enter)" onkeydown="if(event.key==='Enter')doSearch()">
+      <select class="mode-s" id="modeSel"><option value="OR">OR mode</option><option value="AND">AND mode</option></select>
+      
+      <button class="go-btn" id="goBtn" onclick="doSearch()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Search
+      </button>
+      <button class="cancel-btn" id="cancelBtn" onclick="cancelSearch()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancel
+      </button>
+    </div>
+    <div class="tr">
+      <div class="dg"><div class="dlbl">Start</div><div class="di"><input type="time" class="d-in" id="st" value="10:00"></div></div>
+      <div class="dg"><div class="dlbl">End</div><div class="di"><input type="time" class="d-in" id="et" value="12:00"></div></div>
+      <div id="cBadge" class="cache-badge"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>Cache Hit</div>
+    </div>
+    <div class="opts-row">
+      
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Stop after:
+        <input type="number" class="ctx-in" id="stopAfter" placeholder="∞" min="1" step="1000" style="width:70px;"> matches
+      </label>
+      <label class="opt-chip" style="margin-left:12px;">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        Context lines:
+        <input type="number" class="ctx-in" id="ctxLines" placeholder="0" min="0" max="10" value="0">
+      </label>
+    </div>
+  </div>
+
+  <div class="prog-card" id="progCard">
+    <div class="prog-hdr"><div class="spin" id="progSpin"></div><span id="progTitle">Searching...</span></div>
+    <div class="pg">
+      <div class="pg-s"><div class="pg-l">Files</div><div class="pg-v" id="pFiles" style="color:var(--blue2)">0/0</div></div>
+      <div class="pg-s"><div class="pg-l">Lines Scanned</div><div class="pg-v" id="pLines" style="color:var(--amber)">0</div></div>
+      <div class="pg-s"><div class="pg-l">Matches Found</div><div class="pg-v" id="pMatches" style="color:var(--green2)">0</div></div>
+      <div class="pg-s"><div class="pg-l">Elapsed</div><div class="pg-v" id="pTime" style="color:var(--text2)">0ms</div></div>
+    </div>
+    <div class="pb-wrap"><div class="pb" id="pBar"></div></div>
+    <div class="prog-msg" id="pMsg">Starting...</div>
+    <div class="warn-msg" id="warnMsg"></div>
+    <div class="no-match-msg" id="noMatchMsg"></div>
+  </div>
+
+  <div class="stats">
+    <div class="sc"><div class="sl">Files</div><div class="sv" id="sFiles" style="color:var(--blue2)">0</div></div>
+    <div class="sc"><div class="sl">Matches</div><div class="sv" id="sMatches" style="color:var(--green2)">0</div></div>
+    <div class="sc"><div class="sl">Time</div><div class="sv" id="sTime" style="color:var(--amber)">—</div></div>
+    <div class="sc"><div class="sl">Data Searched</div><div class="sv" id="sSize">—</div></div>
+  </div>
+
+  <div>
+    <div class="res-hdr">
+      <div class="res-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        Results <span id="pgInfo" style="font-size:10px;font-weight:400;color:var(--text3);margin-left:6px;"></span>
+      </div>
+      <div class="exp-row">
+        <div class="exp-grp">
+          <span class="exp-lbl">Export</span>
+          <button class="fmt-btn on" onclick="setFmt('zip',this)">ZIP</button>
+          <button class="fmt-btn" onclick="setFmt('csv',this)">CSV</button>
+          <button class="fmt-btn" onclick="setFmt('txt',this)">TXT</button>
+          <button class="fmt-btn" onclick="setFmt('json',this)">JSON</button>
+          <button class="fmt-btn" onclick="setFmt('pdf',this)">PDF</button>
+        </div>
+        <div class="dl-split hide" id="dlBtn" style="display:none;align-items:center;gap:0;">
+          <button class="dl-btn" style="border-radius:6px 0 0 6px;border-right:1px solid rgba(255,255,255,0.2);" onclick="handleDL('page')" title="Download current page only">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            This Page
+          </button>
+          <button class="dl-btn" style="border-radius:0 6px 6px 0;" onclick="handleDL('all')" title="Download all results">
+            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            All Results
+          </button>
+        </div>
+        <button id="shBtn" class="sh-btn hide" onclick="openShare()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>
+          Share
+        </button>
+        <div class="pg-wrap">
+          <span>Show</span>
+          <select class="pg-sel" id="pgSel" onchange="pgSize(this.value)"><option>25</option><option>50</option><option>75</option><option>100</option><option>250</option><option>500</option></select>
+          <span>per page</span>
+        </div>
+      </div>
+    </div>
+    <div class="pag-bar" id="pagBar">
+      <button class="p-btn" onclick="goPage(1)">«</button>
+      <button class="p-btn" onclick="goPage(curPage-1)">‹ Prev</button>
+      <div class="p-nums" id="pNums"></div>
+      <button class="p-btn" onclick="goPage(curPage+1)">Next ›</button>
+      <button class="p-btn" onclick="goPage(totPages)">»</button>
+    </div>
+    <div id="resBox">
+      <div class="empty">
+        <svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24" style="display:block;margin:0 auto 10px;opacity:.3"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <p>Browse to a folder or .gz file, add keywords, then click Search</p>
+        <p style="margin-top:6px;font-size:11px;opacity:.6;">Tip: Use Regex for pattern matching · Add − keywords to exclude · Set context lines to see surrounding log lines</p>
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- Share modal -->
+<div class="overlay" id="shareMod">
+  <div class="modal">
+    <div class="m-title"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>Share Results</div>
+    <div class="s-opts">
+      <a href="#" class="s-opt" onclick="shareVia('email');return false"><svg width="18" height="18" fill="none" stroke="#3b82f6" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg><div><strong>Email</strong><span>Send results via email</span></div></a>
+      <a href="#" class="s-opt" onclick="shareVia('whatsapp');return false"><svg width="18" height="18" viewBox="0 0 24 24" fill="#22c55e"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg><div><strong>WhatsApp</strong><span>Share on WhatsApp</span></div></a>
+      <div class="s-opt" onclick="copyLink()"><svg width="18" height="18" fill="none" stroke="#f59e0b" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622l1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"/></svg><div><strong>Copy Download Link</strong><span id="copyTxt">Click to copy</span></div></div>
+    </div>
+    <button class="m-close" onclick="closeShare()">Close</button>
+  </div>
+</div>
+
+<!-- Save search modal -->
+<div class="overlay" id="saveMod">
+  <div class="modal">
+    <div class="m-title">💾 Save Search</div>
+    <input class="save-modal-input" id="saveNameIn" placeholder="Enter a name for this search...">
+    <button class="save-modal-btn" onclick="confirmSave()">Save</button>
+    <button class="m-close" onclick="document.getElementById('saveMod').classList.remove('show')">Cancel</button>
+  </div>
+</div>
+
+<!-- File browser -->
+<div class="fb-overlay" id="fbOverlay">
+  <div class="fb-modal">
+    <div class="fb-hdr">
+      <div class="fb-title"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg>Browse — Select Folder or .gz File</div>
+      <button class="fb-close" onclick="closeBrowser()">×</button>
+    </div>
+    <div class="fb-toolbar">
+      <div class="fb-path-display" id="fbPathBar">/</div>
+      <div class="fb-mode-tabs">
+        <button class="fb-mode-tab on" id="tabFolder" onclick="setFbMode('folder')">📁 Folder</button>
+        <button class="fb-mode-tab" id="tabFile" onclick="setFbMode('file')">📄 File</button>
+      </div>
+    </div>
+    <div class="fb-body" id="fbBody"><div class="fb-loading">Loading...</div></div>
+    <div class="fb-footer">
+      <div class="fb-sel-info" id="fbSelInfo">Navigate and select</div>
+      <button class="fb-confirm" id="fbConfirm" onclick="confirmSel()" disabled>Use This</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var kws=[],excludeKws=[],rec=JSON.parse(localStorage.getItem('ls_rec')||'[]');
+var curQ=null,curPage=1,pgSz=25,totPages=1;
+var dlUrl='',curRes=null,curFmt='zip';
+var selPath='';
+var fbCurPath='',fbMode='folder',fbSelectedFile='',fbDirData=null;
+var activeES=null;
+
+// Theme
+var html=document.documentElement;
+html.setAttribute('data-theme',localStorage.getItem('ls_th')||'dark');
+updTh();
+function togTheme(){var t=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',t);localStorage.setItem('ls_th',t);updTh();}
+function updTh(){var t=html.getAttribute('data-theme');document.getElementById('bDark').classList.toggle('on',t==='dark');document.getElementById('bLight').classList.toggle('on',t==='light');}
+
+// Keyboard shortcuts
+document.addEventListener('keydown',function(e){
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();doSearch();}
+  if(e.key==='Escape'){cancelSearch();closeBrowser();closeShare();document.getElementById('saveMod').classList.remove('show');}
+});
+
+renderRec();
+
+// ── File browser ──────────────────────────────────────────────────────────────
+function openBrowser(p){fbMode='folder';fbSelectedFile='';document.getElementById('tabFolder').classList.add('on');document.getElementById('tabFile').classList.remove('on');document.getElementById('fbOverlay').classList.add('show');loadDir(p||'/');}
+function closeBrowser(){document.getElementById('fbOverlay').classList.remove('show');}
+function setFbMode(m){fbMode=m;fbSelectedFile='';document.getElementById('tabFolder').classList.toggle('on',m==='folder');document.getElementById('tabFile').classList.toggle('on',m==='file');if(fbDirData)renderDir(fbDirData);else loadDir(fbCurPath||'/');}
+
+async function loadDir(path){
+  fbCurPath=path;fbSelectedFile='';fbDirData=null;
+  document.getElementById('fbPathBar').textContent=path;
+  document.getElementById('fbBody').innerHTML='<div class="fb-loading">Loading...</div>';
+  document.getElementById('fbConfirm').disabled=true;
+  try{
+    var r=await fetch('/browse?path='+encodeURIComponent(path));
+    var d=await r.json();
+    if(d.error){document.getElementById('fbBody').innerHTML='<div class="fb-loading" style="color:var(--red)">'+d.error+'</div>';return;}
+    fbDirData=d;renderDir(d);
+  }catch(e){document.getElementById('fbBody').innerHTML='<div class="fb-loading" style="color:var(--red)">'+e.message+'</div>';}
+}
+
+function renderDir(d){
+  var body=document.getElementById('fbBody');
+  var entries=d.entries||[];
+  var dirs=entries.filter(function(e){return e.is_dir;});
+  var gzFiles=entries.filter(function(e){return !e.is_dir&&e.name.endsWith('.gz');});
+  var h='';
+  if(d.parent){h+='<div class="fb-back" onclick="loadDir(\''+esc(d.parent)+'\')"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg> Back</div>';}
+  if(fbMode==='folder'){
+    var gzHere=gzFiles.length,gzBelow=dirs.reduce(function(s,e){return s+(e.gz_count||0);},0),total=gzHere+gzBelow;
+    if(total>0){h+='<div class="fb-entry" style="background:rgba(37,99,235,.08);border:1px solid var(--blue2);margin-bottom:6px;cursor:default;"><svg width="13" height="13" fill="none" stroke="var(--blue2)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span class="fb-entry-name" style="color:var(--blue3);font-weight:600;">Use this folder ('+total+' .gz files)</span></div>';}
+    dirs.forEach(function(e){
+      var cnt=e.gz_count>0?'<span class="fb-entry-badge">'+e.gz_count+'</span>':'';
+      h+='<div class="fb-entry dir" onclick="loadDir(\''+esc(e.path)+'\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg><span class="fb-entry-name">'+e.name+'/</span>'+cnt+'<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text3);flex-shrink:0"><path d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></div>';
+    });
+    if(!dirs.length&&!gzFiles.length)h+='<div class="fb-loading" style="color:var(--text3)">No .gz files here</div>';
+    document.getElementById('fbConfirm').disabled=(total===0);
+    document.getElementById('fbSelInfo').textContent=total>0?d.path+' ('+total+' .gz)':'No .gz files found';
+  } else {
+    dirs.forEach(function(e){
+      h+='<div class="fb-entry dir" onclick="loadDir(\''+esc(e.path)+'\')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"/></svg><span class="fb-entry-name">'+e.name+'/</span><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--text3);flex-shrink:0"><path d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></div>';
+    });
+    if(gzFiles.length){
+      h+='<div style="font-size:10px;color:var(--text3);padding:5px 11px;text-transform:uppercase;letter-spacing:.06em;">.gz files</div>';
+      gzFiles.forEach(function(e){
+        var isSel=fbSelectedFile===e.path;
+        h+='<div class="fb-entry gz-file'+(isSel?' selected':'')+'" data-path="'+e.path+'" data-name="'+e.name+'" data-size="'+e.size+'" onclick="selectFile(this)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg><span class="fb-entry-name">'+e.name+'</span><span class="fb-entry-meta">'+fmtBytes(e.size)+'</span>'+(isSel?'<svg width="13" height="13" fill="none" stroke="var(--blue2)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4.5 12.75l6 6 9-13.5"/></svg>':'')+'</div>';
+      });
+    } else {
+      h+='<div class="fb-loading" style="color:var(--text3)">No .gz files — go into a subfolder</div>';
+    }
+    document.getElementById('fbConfirm').disabled=!fbSelectedFile;
+    document.getElementById('fbSelInfo').textContent=fbSelectedFile?fbSelectedFile.split('/').pop():'Click a .gz file to select';
+  }
+  body.innerHTML=h;
+}
+
+function selectFile(el){
+  document.querySelectorAll('.fb-entry.gz-file').forEach(function(e){
+    e.classList.remove('selected');
+    var svgs=e.querySelectorAll('svg');
+    if(svgs.length>2)svgs[svgs.length-1].remove();
+  });
+  el.classList.add('selected');
+  fbSelectedFile=el.dataset.path;
+  var chk=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  chk.setAttribute('width','13');chk.setAttribute('height','13');chk.setAttribute('fill','none');
+  chk.setAttribute('stroke','var(--blue2)');chk.setAttribute('stroke-width','2.5');chk.setAttribute('viewBox','0 0 24 24');
+  var p=document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d','M4.5 12.75l6 6 9-13.5');chk.appendChild(p);el.appendChild(chk);
+  document.getElementById('fbConfirm').disabled=false;
+  document.getElementById('fbSelInfo').textContent=el.dataset.name+' ('+fmtBytes(parseInt(el.dataset.size||0))+')';
+}
+
+function confirmSel(){
+  if(fbMode==='folder'){selPath=fbCurPath;document.getElementById('curPath').textContent=selPath;document.getElementById('gzCount').textContent='Folder selected';}
+  else{if(!fbSelectedFile)return;selPath=fbSelectedFile;document.getElementById('curPath').textContent=selPath.split('/').pop();document.getElementById('gzCount').textContent='Single file selected';}
+  closeBrowser();
+}
+function esc(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+// ── Keywords ──────────────────────────────────────────────────────────────────
+function addKw(){var v=document.getElementById('kwIn').value.trim().toUpperCase();if(!v||kws.includes(v))return;kws.push(v);document.getElementById('kwIn').value='';renderKw();document.getElementById('sIn').value=kws.join(' ');}
+function addExclude(){var v=document.getElementById('kwIn').value.trim().toUpperCase();if(!v||excludeKws.includes(v))return;excludeKws.push(v);document.getElementById('kwIn').value='';renderKw();}
+function remKw(k){kws=kws.filter(function(x){return x!==k;});renderKw();document.getElementById('sIn').value=kws.join(' ');}
+function remEx(k){excludeKws=excludeKws.filter(function(x){return x!==k;});renderKw();}
+function renderKw(){
+  document.getElementById('kwTags').innerHTML=kws.map(function(k){return '<div class="kw-tag">'+k+'<button onclick="remKw(\''+k+'\')">×</button></div>';}).join('');
+  document.getElementById('exTags').innerHTML=excludeKws.map(function(k){return '<div class="kw-tag exclude">NOT: '+k+'<button onclick="remEx(\''+k+'\')">×</button></div>';}).join('');
+}
+
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function cancelSearch(){
+  if(activeES){activeES.close();activeES=null;}
+  document.getElementById('cancelBtn').classList.remove('show');
+  document.getElementById('progTitle').textContent='Search cancelled';
+  document.getElementById('progSpin').style.display='none';
+  resetBtn();
+}
+
+function doSearch(){
+  var raw=document.getElementById('sIn').value.trim();
+  var mode=document.getElementById('modeSel').value;
+  var maxLines=parseInt((document.getElementById('stopAfter')||{}).value)||0;
+  var ctxLines=parseInt(document.getElementById('ctxLines').value)||0;
+  var regexPat=document.getElementById('regexIn').value.trim();
+  var caseSens=document.getElementById('caseSensitive').checked;
+  var sd='',st2=document.getElementById('st').value;
+  var ed='',et2=document.getElementById('et').value;
+  var inKws=raw?raw.split(/\s+/).map(function(k){return k.toUpperCase();}):[]; 
+  var allKws=[].concat(kws,inKws).filter(function(v,i,a){return a.indexOf(v)===i;});
+  
+  if(!allKws.length&&!regexPat){alert('Add at least one keyword or regex pattern');return;}
+  if(!selPath){alert('Please select a log folder or .gz file first');openBrowser('/');return;}
+
+  var order='oldest';
+  curQ={keywords:allKws,exclude_keywords:excludeKws,regex_pattern:regexPat,case_sensitive:caseSens,mode:mode,start_time:sd+(st2?' '+st2:''),end_time:ed+(et2?' '+et2:''),request_id:'ui-'+Date.now(),from_line:0,to_line:0,search_path:selPath,context_lines:ctxLines,max_lines_per_file:0,max_matches:maxLines,search_order:order};
+  curPage=1;
+
+  var btn=document.getElementById('goBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spin" style="width:12px;height:12px;border-width:2px;"></div> Searching...';
+  document.getElementById('cancelBtn').classList.add('show');
+  document.getElementById('cBadge').classList.remove('show');
+  var _db2=document.getElementById('dlBtn');_db2.classList.add('hide');_db2.style.display='none';;document.getElementById('shBtn').classList.add('hide');
+  document.getElementById('resBox').innerHTML='';document.getElementById('pagBar').classList.remove('show');document.getElementById('pgInfo').textContent='';
+  document.getElementById('warnMsg').classList.remove('show');document.getElementById('noMatchMsg').classList.remove('show');
+  resetProg();
+
+  if(activeES){activeES.close();}
+  var es=new EventSource('/search/stream?q='+encodeURIComponent(JSON.stringify(curQ)));
+  activeES=es;
+  var searchDone=false;
+
+  es.addEventListener('start',function(e){document.getElementById('pMsg').textContent=JSON.parse(e.data).message||'Starting...';});
+  
+  es.addEventListener('progress',function(e){
+    var d=JSON.parse(e.data);
+    window._lastProgData=d;
+    if(!window._progRaf){
+      window._progRaf=requestAnimationFrame(function(){
+        var d=window._lastProgData;
+        window._progRaf=null;
+        if(!d)return;
+        if(d.files_total>0){document.getElementById('pFiles').textContent=(d.files_searched||0)+'/'+d.files_total;document.getElementById('pBar').style.width=(d.percent||0)+'%';}
+        if(d.lines_scanned!==undefined)document.getElementById('pLines').textContent=fmtNum(d.lines_scanned);
+        if(d.matches_found!==undefined)document.getElementById('pMatches').textContent=d.matches_found;
+        if(d.elapsed_ms!==undefined)document.getElementById('pTime').textContent=d.elapsed_ms+'ms';
+        if(d.message)document.getElementById('pMsg').textContent=d.message;
+      });
+    }
+  });
+
+  es.addEventListener('cache_hit',function(e){searchDone=true;activeES=null;es.close();finish(JSON.parse(e.data),true);});
+  
+  es.addEventListener('done',function(e){
+    var d=JSON.parse(e.data);searchDone=true;activeES=null;es.close();
+    if((d.total_matches||0)===0&&d.no_match_msg){var nm=document.getElementById('noMatchMsg');nm.textContent=d.no_match_msg;nm.classList.add('show');}
+    finish(d,false);
+  });
+
+  es.addEventListener('error',function(ev){
+    if(searchDone||ev.target.readyState===EventSource.CLOSED)return;
+    activeES=null;es.close();
+    document.getElementById('progTitle').textContent='Search failed';
+    document.getElementById('progSpin').style.display='none';
+    document.getElementById('pMsg').textContent='Connection error';
+    document.getElementById('cancelBtn').classList.remove('show');
+    resetBtn();
+  });
+}
+
+function resetProg(){
+  document.getElementById('progCard').classList.add('show');
+  document.getElementById('progSpin').style.display='inline-block';
+  document.getElementById('progTitle').textContent='Searching...';
+  document.getElementById('pFiles').textContent='0/0';document.getElementById('pLines').textContent='0';
+  document.getElementById('pMatches').textContent='0';document.getElementById('pTime').textContent='0ms';
+  document.getElementById('pBar').style.width='0%';document.getElementById('pMsg').textContent='Starting...';
+}
+
+function resetBtn(){
+  document.getElementById('cancelBtn').classList.remove('show');
+  var btn=document.getElementById('goBtn');
+  btn.disabled=false;btn.innerHTML='<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg> Search';
+}
+
+function finish(d,fromCache){
+  document.getElementById('progSpin').style.display='none';
+  document.getElementById('pMsg').textContent='';
+  document.getElementById('cancelBtn').classList.remove('show');
+  document.getElementById('progTitle').textContent=fromCache?'⚡ Cache Hit':(d.total_matches||0).toLocaleString()+' matches found';
+  document.getElementById('pBar').style.width='100%';
+  if(fromCache)document.getElementById('cBadge').classList.add('show');
+  document.getElementById('sFiles').textContent=d.files_searched||0;
+  document.getElementById('sMatches').textContent=(d.total_matches||0).toLocaleString();
+  document.getElementById('sTime').textContent=fromCache?'<1ms':(d.elapsed_ms||0)+'ms';
+  document.getElementById('sSize').textContent=fmtBytes(d.searched_size||0);
+  curRes=d;
+  if(d.total_matches>0){var _db=document.getElementById('dlBtn');_db.classList.remove('hide');_db.style.display='flex';}
+  document.getElementById('shBtn').classList.remove('hide');
+  saveRec(curQ.keywords,curQ.mode,d.total_matches||0);
+  resetBtn();
+  fetchPage(1);
+}
+
+// ── Pagination ────────────────────────────────────────────────────────────────
+function pgSize(v){pgSz=parseInt(v);curPage=1;if(curQ)fetchPage(1);}
+function goPage(p){if(p<1||p>totPages)return;curPage=p;fetchPage(p);}
+
+async function fetchPage(pg){
+  if(!curQ)return;
+  try{
+    var r=await fetch('/search/page?page='+pg+'&page_size='+pgSz,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)});
+    var d=await r.json();
+    if(d.error){document.getElementById('resBox').innerHTML='<div class="empty"><p style="color:var(--red)">'+d.error+'</p></div>';return;}
+    totPages=d.total_pages||1;curPage=d.page||1;
+    var tot=d.total_matches||0;
+    var s=(curPage-1)*pgSz+1,e2=Math.min(curPage*pgSz,tot);
+    document.getElementById('pgInfo').textContent=tot>0?'Showing '+s.toLocaleString()+'-'+e2.toLocaleString()+' of '+tot.toLocaleString():'';
+    // Update download button if zip now ready
+    if(d.total_matches>0){var _db=document.getElementById('dlBtn');_db.classList.remove('hide');_db.style.display='flex';}
+    renderPag(curPage,totPages);
+    renderRes(d.matches||[],curQ.keywords||[],curQ.regex_pattern||'');
+  }catch(ex){document.getElementById('resBox').innerHTML='<div class="empty"><p style="color:var(--red)">'+ex.message+'</p></div>';}
+}
+
+function renderPag(pg,tot){
+  var bar=document.getElementById('pagBar'),nums=document.getElementById('pNums');
+  if(tot<=1){bar.classList.remove('show');return;}
+  bar.classList.add('show');
+  var pages=[];
+  if(tot<=7){for(var i=1;i<=tot;i++)pages.push(i);}
+  else{pages=[1];if(pg>3)pages.push('...');for(var i=Math.max(2,pg-1);i<=Math.min(tot-1,pg+1);i++)pages.push(i);if(pg<tot-2)pages.push('...');pages.push(tot);}
+  nums.innerHTML=pages.map(function(p){return p==='...'?'<span style="padding:4px;color:var(--text3);font-size:11px;">...</span>':'<button class="p-btn" onclick="goPage('+p+')" style="'+(p===pg?'background:var(--blue);color:#fff;border-color:var(--blue);':'')+'">'+p+'</button>';}).join('');
+}
+
+function renderRes(matches,kwList,regexPat){
+  var box=document.getElementById('resBox');
+  if(!matches.length){box.innerHTML='<div class="empty"><p>No matches found</p></div>';return;}
+  var parts=['<div class="r-list">'];
+  for(var i=0;i<matches.length;i++){
+    var m=matches[i];
+    var fn=(m.file_path||'').split('/').pop();
+    var tags=(m.matched_terms||[]).map(function(t){return '<span class="tt">'+t+'</span>';}).join('');
+    var copyPath=m.file_path||'';
+
+    if(m.context_lines&&m.context_lines.length>1){
+      // Context lines view
+      var ctxHtml='';
+      var matchLineNum=m.line_number;
+      var ctxStart=m.context_start||1;
+      for(var j=0;j<m.context_lines.length;j++){
+        var lineN=ctxStart+j;
+        var rawLine=escHtml(m.context_lines[j]);
+        var isMatch=(lineN===matchLineNum);
+        if(isMatch){
+          for(var k=0;k<kwList.length;k++){rawLine=rawLine.replace(new RegExp(escRe(kwList[k]),'gi'),function(x){return '<span class="hl">'+x+'</span>';});}
+          if(regexPat){try{rawLine=rawLine.replace(new RegExp(regexPat,'gi'),function(x){return '<span class="hl">'+x+'</span>';});}catch(e){}}
+        }
+        ctxHtml+='<div class="'+(isMatch?'match-line':'')+' '+(isMatch?'':'ctx-line')+'"><span style="color:var(--text4);margin-right:8px;font-size:10px;min-width:30px;display:inline-block;text-align:right;">'+lineN+'</span>'+rawLine+'</div>';
+      }
+      parts.push('<div class="ri"><div class="ri-meta"><div class="ri-file"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>'+fn+'</div><span class="ln">Line '+m.line_number+'</span><div style="display:flex;gap:3px;margin-left:auto;">'+tags+'<button class="copy-btn" onclick="copyPath(\''+esc(copyPath)+'\')" title="Copy path">📋</button></div></div><div class="ri-txt">'+ctxHtml+'</div></div>');
+    } else {
+      var txt=escHtml(m.line_text||'');
+      for(var k=0;k<kwList.length;k++){txt=txt.replace(new RegExp(escRe(kwList[k]),'gi'),function(x){return '<span class="hl">'+x+'</span>';});}
+      if(regexPat){try{txt=txt.replace(new RegExp(regexPat,'gi'),function(x){return '<span class="hl">'+x+'</span>';});}catch(e){}}
+      parts.push('<div class="ri"><div class="ri-meta"><div class="ri-file"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>'+fn+'</div><span class="ln">Line '+m.line_number+'</span><div style="display:flex;gap:3px;margin-left:auto;">'+tags+'<button class="copy-btn" onclick="copyPath(\''+esc(copyPath)+'\')" title="Copy path">📋</button></div></div><div class="ri-txt match-line">'+txt+'</div></div>');
+    }
+  }
+  parts.push('</div>');
+  box.innerHTML=parts.join('');
+}
+
+function copyPath(path){navigator.clipboard.writeText(path).then(function(){}).catch(function(){});}
+
+// ── Download ──────────────────────────────────────────────────────────────────
+function setFmt(f,btn){curFmt=f;document.querySelectorAll('.fmt-btn').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');}
+
+async function handleDL(scope){
+  if(!curQ)return;
+  scope=scope||'all';
+  var dlIcon='<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>';
+  if(curFmt==='zip'){
+    if(scope==='page'){alert('ZIP download is only available for all results.');return;}
+    var btn=document.querySelector('#dlBtn button:last-child');
+    if(btn){btn.textContent='Preparing ZIP...';btn.disabled=true;}
+    try{
+      var r=await fetch('/download/zip',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)});
+      if(!r.ok){alert('ZIP error: '+r.statusText);return;}
+      var blob=await r.blob();
+      var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='logsearch_results.zip';a.click();URL.revokeObjectURL(a.href);
+    }catch(e){alert('ZIP error: '+e.message);}
+    finally{if(btn){btn.disabled=false;btn.textContent='All Results';}}
+    return;
+  }
+  if(curFmt==='pdf'){await dlPDF(scope);return;}
+  var ep={csv:'/download/csv',txt:'/download/txt',json:'/download/json'}[curFmt];
+  if(!ep)return;
+  // Find clicked button and disable it
+  var btns=document.querySelectorAll('#dlBtn button');
+  btns.forEach(function(b){b.disabled=true;b.textContent='...'});
+  try{
+    var body,suffix,filename;
+    if(scope==='page'){
+      // Fetch current page from backend freshly
+      var pr=await fetch('/search/page?page='+curPage+'&page_size='+pgSz,{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)
+      });
+      var pd=await pr.json();
+      var pageLines=(pd.matches||[]).map(function(m){return m.line_text||'';});
+      body=JSON.stringify({__page_data__:pageLines,format:curFmt});
+      ep='/download/page';
+      suffix='_page'+curPage;
+      filename='logsearch_page'+curPage+'.'+curFmt;
+    } else {
+      body=JSON.stringify(curQ);
+      suffix='';
+      filename='logsearch_all_results.'+curFmt;
+    }
+    var r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:body});
+    if(!r.ok){alert('Download failed: '+await r.text());return;}
+    var blob=await r.blob();
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);
+  }catch(e){alert('Error: '+e.message);}
+  finally{
+    btns.forEach(function(b){b.disabled=false;});
+    document.querySelectorAll('#dlBtn button')[0].innerHTML=dlIcon+' This Page';
+    document.querySelectorAll('#dlBtn button')[1].innerHTML=dlIcon+' All Results';
+  }
+}
+
+async function dlPDF(){
+  var btn=document.querySelector('#dlBtn button[onclick*="dlPDF"]')||document.querySelector('#dlBtn button:last-child');
+  var origHTML=btn?btn.innerHTML:'';
+  if(btn){btn.textContent='Preparing...';btn.disabled=true;}
+  try{
+    var r=await fetch('/download/txt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(curQ)});
+    var lines=await r.text();
+    var pw=window.open('','_blank');
+    var h='<html><head><title>LogSearch Results</title><style>body{font-family:monospace;padding:20px;font-size:11px;line-height:1.6;}h2{font-size:15px;}pre{background:#f1f5f9;padding:5px 8px;margin:2px 0;border-radius:2px;white-space:pre-wrap;word-break:break-all;}</style></head><body>';
+    h+='<h2>LogSearch Results — '+(curRes&&curRes.total_matches?curRes.total_matches.toLocaleString():0)+' matches</h2>';
+    h+='<p>Keywords: '+(curQ&&curQ.keywords?curQ.keywords.join(', '):'')+(curQ&&curQ.regex_pattern?' | Regex: '+curQ.regex_pattern:'')+' | Path: '+(curQ&&curQ.search_path?curQ.search_path:'')+'</p><hr><br>';
+    lines.split('\n').filter(function(l){return l.trim();}).forEach(function(l){h+='<pre>'+l.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>';});
+    h+='</body></html>';
+    pw.document.write(h);pw.document.close();setTimeout(function(){pw.print();},600);
+  }catch(e){alert('PDF error: '+e.message);}
+  finally{if(btn){btn.disabled=false;btn.innerHTML='<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg> Download';}
+}
+}
+
+// ── Share ─────────────────────────────────────────────────────────────────────
+function openShare(){document.getElementById('shareMod').classList.add('show');}
+function closeShare(){document.getElementById('shareMod').classList.remove('show');}
+function shareVia(t){var cnt=curRes?curRes.total_matches||0:0;var kw=(curQ?curQ.keywords||[]:['?']).join(', ');var msg='LogSearch: '+cnt.toLocaleString()+' matches for "'+kw+'" | '+location.origin+dlUrl;if(t==='email')window.open('mailto:?subject=Log Search Results&body='+encodeURIComponent(msg));else window.open('https://wa.me/?text='+encodeURIComponent(msg));closeShare();}
+function copyLink(){navigator.clipboard.writeText(location.origin+(dlUrl||'')).then(function(){document.getElementById('copyTxt').textContent='Copied!';setTimeout(function(){document.getElementById('copyTxt').textContent='Click to copy';},2000);});}
+
+// ── Recent ────────────────────────────────────────────────────────────────────
+function saveRec(kw,mode,cnt){rec.unshift({kw:kw,mode:mode,cnt:cnt,time:new Date().toLocaleTimeString()});if(rec.length>8)rec=rec.slice(0,8);localStorage.setItem('ls_rec',JSON.stringify(rec));renderRec();}
+function delRec(i,ev){ev.stopPropagation();rec.splice(i,1);localStorage.setItem('ls_rec',JSON.stringify(rec));renderRec();}
+function renderRec(){var el=document.getElementById('recList');if(!rec.length){el.innerHTML='<div style="font-size:11px;color:var(--text4);padding:4px 6px;">No recent searches</div>';return;}el.innerHTML=rec.map(function(s,i){return '<div class="rec-item" onclick="loadRec('+i+')"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span class="rec-txt">'+(s.kw||[]).join(', ')+' · '+s.mode+' · '+s.cnt+'</span><span class="rec-time">'+s.time+'</span><button class="rec-del" onclick="delRec('+i+',event)">×</button></div>';}).join('');}
+function loadRec(i){var s=rec[i];kws=[].concat(s.kw||[]);renderKw();document.getElementById('sIn').value=(s.kw||[]).join(' ');document.getElementById('modeSel').value=s.mode||'OR';doSearch();}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtBytes(b){if(!b)return'-';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';if(b<1073741824)return(b/1048576).toFixed(2)+' MB';return(b/1073741824).toFixed(2)+' GB';}
+function fmtNum(n){if(!n)return'0';if(n<1000)return''+n;if(n<1000000)return(n/1000).toFixed(1)+'K';return(n/1000000).toFixed(1)+'M';}
+function escHtml(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escRe(s){return(s||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+</script>
+<!-- Changelog Modal -->
+<div id="changelogModal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.6);backdrop-filter:blur(3px);" onclick="if(event.target===this)closeChangelog()">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:560px;max-width:95vw;max-height:80vh;overflow-y:auto;padding:28px 32px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">LogSearch Engine</div>
+        <div style="font-size:12px;color:var(--text3);margin-top:2px;">What changed in v2.0</div>
+      </div>
+      <button onclick="closeChangelog()" style="background:var(--bg4);border:1px solid var(--border);color:var(--text2);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">×</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px;">
+
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--blue3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">New Features</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text2);">
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Exclude Keywords</b> — filter out lines containing specific words from results</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Regex Search</b> — search using regular expressions instead of keywords</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Case Sensitive Mode</b> — toggle exact case matching for keyword searches</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Context Lines</b> — see N lines before and after each match for more context</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">Saved Searches</b> — save and reload your frequently used search configurations</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--green2);font-size:11px;margin-top:2px;">+</span><span><b style="color:var(--text)">CSV &amp; JSON Download</b> — export results in CSV or JSON format in addition to ZIP and TXT</span></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Fixes &amp; Improvements</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text2);">
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">50,000 match cap</b> — search stops at 50k matches to prevent disk full and server crash</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">5s no-match timeout</b> — if keyword not found in 5 seconds, search stops with a clear message</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Date filter fixed</b> — results now correctly respect start and end date/time range</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Faster result rendering</b> — results appear immediately after search completes</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Line Range removed</b> — replaced with smarter global match cap (no user input needed)</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">ZIP export async</b> — search results show instantly, ZIP builds in background</span></div>
+          <div style="display:flex;gap:10px;"><span style="color:var(--blue3);font-size:11px;margin-top:2px;">~</span><span><b style="color:var(--text)">Search cancellation</b> — ongoing search can be cancelled cleanly without server crash</span></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:14px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text4);">v1.0 → v2.0</span>
+        <button onclick="closeChangelog()" style="background:var(--blue);color:#fff;border:none;padding:7px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function showChangelog(){document.getElementById('changelogModal').style.display='block';}
+function closeChangelog(){document.getElementById('changelogModal').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeChangelog();});
+</script>
+
+</body>
+</html>

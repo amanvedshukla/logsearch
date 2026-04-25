@@ -13,13 +13,14 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"sort"
 	ahocorasick "github.com/BobuSumisu/aho-corasick"
 	"logsearch/internal/cache"
 	"logsearch/internal/export"
@@ -29,15 +30,16 @@ import (
 // ─── Config ───────────────────────────────────────────────────────────────────
 const (
 	DefaultMaxLinesPerFile = 0 // 0 = unlimited
-	NoMatchTimeoutSecs = 5
-	MaxMemEntries      = 20
-	MaxDiskMB          = 500
+	NoMatchTimeoutSecs     = 5
+	MaxMemEntries          = 20
+	MaxDiskMB              = 500
 )
 
 // ─── Globals ──────────────────────────────────────────────────────────────────
 var (
-	queryCache *cache.Cache
-	bufPool    = sync.Pool{New: func() interface{} { b := make([]byte, 64<<20); return &b }}
+	queryCache    *cache.Cache
+	bufPool       = sync.Pool{New: func() interface{} { b := make([]byte, 64<<20); return &b }}
+	serverStartTime = time.Now()
 )
 
 type memEntry struct {
@@ -293,7 +295,6 @@ func searchFiles(
 				}
 			}()
 
-			// Check context (cancel)
 			select {
 			case <-ctx.Done():
 				resultsCh <- nil
@@ -321,7 +322,6 @@ func searchFiles(
 			scanner := bufio.NewScanner(gz)
 			scanner.Buffer(*bufPtr, len(*bufPtr))
 
-			// For context lines: keep a sliding window
 			contextSize := q.ContextLines
 			if contextSize < 0 {
 				contextSize = 0
@@ -330,20 +330,22 @@ func searchFiles(
 				contextSize = 10
 			}
 
-
 			lineNum := 0
 			fileMatchCount := 0
-			// Context lines: sliding window approach (memory efficient)
 			if contextSize > 0 {
 				window := make([]string, 0, contextSize*2+1)
-				pendingMatches := []struct{ line string; terms []string; winIdx int }{}
+				pendingMatches := []struct {
+					line   string
+					terms  []string
+					winIdx int
+				}{}
 				lineIdx := 0
 				for scanner.Scan() {
 					lineIdx++
 					line := scanner.Text()
 					window = append(window, line)
 					atomic.AddInt64(&linesScanned, 1)
-					if lineIdx%5000 == 0 {
+					if lineIdx%50000 == 0 {
 						select {
 						case progressCh <- Progress{
 							FilesTotal: totalFiles, FilesSearched: atomic.LoadInt64(&filesSearched),
@@ -362,43 +364,52 @@ func searchFiles(
 					if m {
 						atomic.AddInt64(&matchesFound, 1)
 						fileMatchCount++
-						// Store match with pending index for future context
-						pendingMatches = append(pendingMatches, struct{ line string; terms []string; winIdx int }{line, terms, lineIdx})
+						pendingMatches = append(pendingMatches, struct {
+							line   string
+							terms  []string
+							winIdx int
+						}{line, terms, lineIdx})
 					}
-					// Flush pending matches whose future context is now available
 					for len(pendingMatches) > 0 {
 						pm := pendingMatches[0]
-						if lineIdx >= pm.winIdx + contextSize {
-							// Collect context from window
+						if lineIdx >= pm.winIdx+contextSize {
 							matchWinPos := lineIdx - pm.winIdx
 							ctxStart := len(window) - matchWinPos - contextSize - 1
-							if ctxStart < 0 { ctxStart = 0 }
+							if ctxStart < 0 {
+								ctxStart = 0
+							}
 							ctxEnd := len(window)
 							var ctxLines []string
 							for _, cl := range window[ctxStart:ctxEnd] {
 								ctxLines = append(ctxLines, cl)
 							}
 							ctxStartLine := pm.winIdx - (len(ctxLines) - contextSize - 1)
-							if ctxStartLine < 1 { ctxStartLine = 1 }
-							_m := types.Match{FilePath:fpath,LineNumber:pm.winIdx,LineText:pm.line,MatchedTerms:pm.terms,ContextLines:ctxLines,ContextStart:ctxStartLine}
+							if ctxStartLine < 1 {
+								ctxStartLine = 1
+							}
+							_m := types.Match{FilePath: fpath, LineNumber: pm.winIdx, LineText: pm.line, MatchedTerms: pm.terms, ContextLines: ctxLines, ContextStart: ctxStartLine}
 							if matchWriter != nil {
 								writeMu.Lock()
-								if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
+								if _d, _e := json.Marshal(_m); _e == nil {
+									matchWriter.Write(_d)
+									matchWriter.WriteByte('\n')
+								}
 								writeMu.Unlock()
 							}
-							newCnt := atomic.AddInt64(matchCount,1)
+							newCnt := atomic.AddInt64(matchCount, 1)
 							pendingMatches = pendingMatches[1:]
-							if maxMatches>0 && newCnt>=maxMatches { resultsCh<-nil; return }
+							if maxMatches > 0 && newCnt >= maxMatches {
+								resultsCh <- nil
+								return
+							}
 						} else {
 							break
 						}
 					}
-					// Keep window bounded
 					if len(window) > contextSize*2+2 {
 						window = window[1:]
 					}
 				}
-				// Flush remaining pending matches
 				for _, pm := range pendingMatches {
 					ctxStart := 0
 					ctxEnd := len(window)
@@ -406,16 +417,18 @@ func searchFiles(
 					for _, cl := range window[ctxStart:ctxEnd] {
 						ctxLines = append(ctxLines, cl)
 					}
-					_m := types.Match{FilePath:fpath,LineNumber:pm.winIdx,LineText:pm.line,MatchedTerms:pm.terms,ContextLines:ctxLines,ContextStart:pm.winIdx}
+					_m := types.Match{FilePath: fpath, LineNumber: pm.winIdx, LineText: pm.line, MatchedTerms: pm.terms, ContextLines: ctxLines, ContextStart: pm.winIdx}
 					if matchWriter != nil {
 						writeMu.Lock()
-						if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
+						if _d, _e := json.Marshal(_m); _e == nil {
+							matchWriter.Write(_d)
+							matchWriter.WriteByte('\n')
+						}
 						writeMu.Unlock()
 					}
-					atomic.AddInt64(matchCount,1)
+					atomic.AddInt64(matchCount, 1)
 				}
 			} else {
-				// Fast path: no context, stream directly
 				for scanner.Scan() {
 					lineNum++
 					select {
@@ -431,7 +444,7 @@ func searchFiles(
 						break
 					}
 					atomic.AddInt64(&linesScanned, 1)
-					if lineNum%5000 == 0 {
+					if lineNum%50000 == 0 {
 						select {
 						case progressCh <- Progress{
 							FilesTotal: totalFiles, FilesSearched: atomic.LoadInt64(&filesSearched),
@@ -445,14 +458,20 @@ func searchFiles(
 					if m {
 						atomic.AddInt64(&matchesFound, 1)
 						fileMatchCount++
-						_m := types.Match{FilePath:fpath,LineNumber:lineNum,LineText:line,MatchedTerms:terms}
+						_m := types.Match{FilePath: fpath, LineNumber: lineNum, LineText: line, MatchedTerms: terms}
 						if matchWriter != nil {
 							writeMu.Lock()
-							if _d,_e := json.Marshal(_m); _e==nil { matchWriter.Write(_d); matchWriter.WriteByte('\n') }
+							if _d, _e := json.Marshal(_m); _e == nil {
+								matchWriter.Write(_d)
+								matchWriter.WriteByte('\n')
+							}
 							writeMu.Unlock()
 						}
-						newCnt := atomic.AddInt64(matchCount,1)
-						if maxMatches>0 && newCnt>=maxMatches { resultsCh<-nil; return }
+						newCnt := atomic.AddInt64(matchCount, 1)
+						if maxMatches > 0 && newCnt >= maxMatches {
+							resultsCh <- nil
+							return
+						}
 					}
 				}
 			}
@@ -473,26 +492,31 @@ func matchLine(
 	regexPat *regexp.Regexp,
 	q types.Query,
 ) (bool, []string) {
-	// Time filter — compare only time part (HH:MM) from log line "2006-01-02 15:04:05"
 	if (q.StartTime != "" || q.EndTime != "") && len(line) >= 19 {
-		lineTime := line[11:16] // "HH:MM"
+		lineTime := line[11:16]
 		start := strings.TrimSpace(q.StartTime)
 		end := strings.TrimSpace(q.EndTime)
-		if len(start) >= 5 { start = start[:5] }
-		if len(end) >= 5 { end = end[:5] }
-		if start != "" && lineTime < start { return false, nil }
-		if end != "" && lineTime > end { return false, nil }
+		if len(start) >= 5 {
+			start = start[:5]
+		}
+		if len(end) >= 5 {
+			end = end[:5]
+		}
+		if start != "" && lineTime < start {
+			return false, nil
+		}
+		if end != "" && lineTime > end {
+			return false, nil
+		}
 	}
 	lower := strings.ToLower(line)
 
-	// Exclude check
 	for _, ex := range excludeLower {
 		if strings.Contains(lower, ex) {
 			return false, nil
 		}
 	}
 
-	// Regex mode
 	if regexPat != nil {
 		if regexPat.MatchString(line) {
 			return true, []string{"regex"}
@@ -500,7 +524,6 @@ func matchLine(
 		return false, nil
 	}
 
-	// Keyword match
 	hits := trie.MatchString(lower)
 	if len(hits) == 0 {
 		return false, nil
@@ -567,7 +590,6 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("[SEARCH] keywords=%v regex=%s exclude=%v mode=%s path=%s",
 		q.Keywords, q.RegexPattern, q.ExcludeKeywords, q.Mode, q.SearchPath)
 
-	// Cache check
 	cacheKey := queryHash(q)
 	if cached := queryCache.GetFilePath(cacheKey); cached != nil {
 		log.Printf("[SEARCH] cache hit")
@@ -584,7 +606,6 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 
 	send("start", map[string]string{"message": "Scanning for .gz files..."})
 
-	// Walk path
 	var gzFiles []string
 	var totalSize int64
 	fi, err := os.Stat(q.SearchPath)
@@ -610,18 +631,12 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	// Sort files by name (filename contains timestamp) — latest or oldest first
 	if q.SearchOrder == "latest" {
 		sort.Slice(gzFiles, func(i, j int) bool { return gzFiles[i] > gzFiles[j] })
 	} else {
 		sort.Slice(gzFiles, func(i, j int) bool { return gzFiles[i] < gzFiles[j] })
 	}
 
-	if q.SearchOrder == "latest" {
-		sort.Slice(gzFiles, func(i, j int) bool { return gzFiles[i] > gzFiles[j] })
-	} else {
-		sort.Slice(gzFiles, func(i, j int) bool { return gzFiles[i] < gzFiles[j] })
-	}
 	if len(gzFiles) == 0 {
 		send("done", map[string]interface{}{
 			"total_matches": 0, "total_files": 0,
@@ -637,7 +652,6 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 		"searched_size": totalSize,
 	})
 
-	// Build search tools
 	kwLower := make([]string, len(q.Keywords))
 	for i, k := range q.Keywords {
 		kwLower[i] = strings.ToLower(k)
@@ -661,22 +675,20 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Build trie (only if no regex)
 	builder := ahocorasick.NewTrieBuilder()
 	if regexPat == nil {
 		for _, k := range kwLower {
 			builder.AddPattern([]byte(k))
 		}
 	} else {
-		builder.AddPattern([]byte("x")) // dummy
+		builder.AddPattern([]byte("x"))
 	}
 	trie := builder.Build()
 
-	// Cancellable context
 	ctx, cancelFn := context.WithCancel(context.Background())
 	defer cancelFn()
 
-	progressCh := make(chan Progress, 500)
+	progressCh := make(chan Progress, 2)
 	resultsCh := make(chan []types.Match, len(gzFiles))
 
 	os.MkdirAll("results_cache", 0755)
@@ -685,10 +697,11 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 	var writeMu sync.Mutex
 	var matchCount int64
 	maxMatches := q.MaxMatches
-	if tmpFile != nil { matchWriter = bufio.NewWriterSize(tmpFile, 4*1024*1024) }
+	if tmpFile != nil {
+		matchWriter = bufio.NewWriterSize(tmpFile, 4*1024*1024)
+	}
 	go searchFiles(ctx, gzFiles, q, trie, kwLower, excludeLower, regexPat, progressCh, resultsCh, matchWriter, &writeMu, &matchCount, maxMatches)
 
-	// Stream progress + 5s no-match timeout
 	searchStart := time.Now()
 	noMatchTimer := time.NewTimer(time.Duration(NoMatchTimeoutSecs) * time.Second)
 	defer noMatchTimer.Stop()
@@ -745,21 +758,31 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 
 	_ = lastProg
 
-	// Drain results — already written to disk
-	for range resultsCh {}
+	for range resultsCh {
+	}
 	elapsed := time.Since(searchStart).Milliseconds()
-	if matchWriter != nil { writeMu.Lock(); matchWriter.Flush(); writeMu.Unlock() }
+	if matchWriter != nil {
+		writeMu.Lock()
+		matchWriter.Flush()
+		writeMu.Unlock()
+	}
 	filePath := ""
-	if tmpFile != nil { tmpFile.Close(); filePath = tmpFile.Name() }
+	if tmpFile != nil {
+		tmpFile.Close()
+		filePath = tmpFile.Name()
+	}
 	totalMatchCount := int(atomic.LoadInt64(&matchCount))
 	noMatchMsg := ""
 	if totalMatchCount == 0 {
 		noMatchMsg = fmt.Sprintf("No matches found for '%s' in %d files (%dms)", strings.Join(q.Keywords, ", "), len(gzFiles), elapsed)
-		if filePath != "" { os.Remove(filePath); filePath = "" }
+		if filePath != "" {
+			os.Remove(filePath)
+			filePath = ""
+		}
 	}
 	log.Printf("[SEARCH] done — %d matches in %dms", totalMatchCount, elapsed)
 	if filePath != "" {
-		queryCache.SetFilePath(cacheKey, cache.CacheEntry{FilePath:filePath,TotalMatches:totalMatchCount,TotalFiles:len(gzFiles),SearchedSize:totalSize})
+		queryCache.SetFilePath(cacheKey, cache.CacheEntry{FilePath: filePath, TotalMatches: totalMatchCount, TotalFiles: len(gzFiles), SearchedSize: totalSize})
 		go cache.CleanOldResultFiles("results_cache", 5120)
 	}
 	send("done", map[string]interface{}{
@@ -800,11 +823,13 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	matches, err := cache.ReadMatchesPage(entry.FilePath, page, pageSize)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"error": "read error: "+err.Error()})
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": "read error: " + err.Error()})
 		return
 	}
 	totalPg := (entry.TotalMatches + pageSize - 1) / pageSize
-	if totalPg < 1 { totalPg = 1 }
+	if totalPg < 1 {
+		totalPg = 1
+	}
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"matches":        matches,
 		"total_matches":  entry.TotalMatches,
@@ -915,7 +940,7 @@ func pageDownloadHandler(w http.ResponseWriter, r *http.Request) {
 			out = append(out, row{LogMessage: line})
 		}
 		json.NewEncoder(w).Encode(out)
-	default: // txt
+	default:
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Content-Disposition", "attachment; filename=logsearch_page.txt")
 		for _, line := range body.PageData {
@@ -972,6 +997,204 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, nil)
 }
 
+// ─── /stats/file ──────────────────────────────────────────────────────────────
+func fileStatsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var q types.Query
+	if err := json.NewDecoder(r.Body).Decode(&q); err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": "invalid JSON"})
+		return
+	}
+
+	entry := queryCache.GetFilePath(queryHash(q))
+	if entry == nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": "no results — run search first"})
+		return
+	}
+
+	allMatches, err := cache.ReadMatchesPage(entry.FilePath, 1, entry.TotalMatches)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"error": "read error: " + err.Error()})
+		return
+	}
+
+	type CountMap map[string]int
+
+	errorCodes := CountMap{}
+	apiEndpoints := CountMap{}
+	banks := CountMap{}
+	users := CountMap{}
+	hourBuckets := CountMap{}
+	matchedTerms := CountMap{}
+
+	for _, m := range allMatches {
+		line := m.LineText
+		parts := strings.Split(line, "|")
+		for _, p := range parts {
+			p = strings.TrimSpace(p)
+			if strings.HasPrefix(p, "ERROR_CODE:") {
+				errorCodes[strings.TrimPrefix(p, "ERROR_CODE:")]++
+			} else if strings.HasPrefix(p, "API:") {
+				apiEndpoints[strings.TrimPrefix(p, "API:")]++
+			} else if strings.HasPrefix(p, "BANK:") {
+				banks[strings.TrimPrefix(p, "BANK:")]++
+			} else if strings.HasPrefix(p, "USER:") {
+				users[strings.TrimPrefix(p, "USER:")]++
+			}
+		}
+		if len(line) >= 13 {
+			hourBuckets[line[11:13]+":00"]++
+		}
+		for _, t := range m.MatchedTerms {
+			matchedTerms[t]++
+		}
+	}
+
+	toSlice := func(cm CountMap, limit int) []map[string]interface{} {
+		type kv struct {
+			k string
+			v int
+		}
+		var kvs []kv
+		for k, v := range cm {
+			kvs = append(kvs, kv{k, v})
+		}
+		sort.Slice(kvs, func(i, j int) bool { return kvs[i].v > kvs[j].v })
+		var out []map[string]interface{}
+		for i, x := range kvs {
+			if limit > 0 && i >= limit {
+				break
+			}
+			out = append(out, map[string]interface{}{"label": x.k, "count": x.v})
+		}
+		return out
+	}
+
+	var timeline []map[string]interface{}
+	for h := 0; h < 24; h++ {
+		key := fmt.Sprintf("%02d:00", h)
+		cnt := hourBuckets[key]
+		if cnt > 0 {
+			timeline = append(timeline, map[string]interface{}{"label": key, "count": cnt})
+		}
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"total_matches": entry.TotalMatches,
+		"total_files":   entry.TotalFiles,
+		"error_codes":   toSlice(errorCodes, 10),
+		"api_endpoints": toSlice(apiEndpoints, 10),
+		"banks":         toSlice(banks, 10),
+		"top_users":     toSlice(users, 10),
+		"timeline":      timeline,
+		"matched_terms": toSlice(matchedTerms, 20),
+		"search_path":   q.SearchPath,
+		"keywords":      q.Keywords,
+	})
+}
+
+// ─── /metrics ─────────────────────────────────────────────────────────────────
+type cpuSnapshot struct {
+	user, nice, system, idle, iowait, irq, softirq uint64
+}
+
+func readProcStat() (cpuSnapshot, error) {
+	f, err := os.Open("/proc/stat")
+	if err != nil {
+		return cpuSnapshot{}, err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "cpu ") {
+			var s cpuSnapshot
+			fmt.Sscanf(line, "cpu  %d %d %d %d %d %d %d",
+				&s.user, &s.nice, &s.system, &s.idle,
+				&s.iowait, &s.irq, &s.softirq)
+			return s, nil
+		}
+	}
+	return cpuSnapshot{}, fmt.Errorf("cpu line not found")
+}
+
+func cpuPercent() float64 {
+	s1, err := readProcStat()
+	if err != nil {
+		return -1
+	}
+	time.Sleep(200 * time.Millisecond)
+	s2, err := readProcStat()
+	if err != nil {
+		return -1
+	}
+	total1 := s1.user + s1.nice + s1.system + s1.idle + s1.iowait + s1.irq + s1.softirq
+	total2 := s2.user + s2.nice + s2.system + s2.idle + s2.iowait + s2.irq + s2.softirq
+	idle1 := s1.idle + s1.iowait
+	idle2 := s2.idle + s2.iowait
+	dTotal := float64(total2 - total1)
+	dIdle := float64(idle2 - idle1)
+	if dTotal == 0 {
+		return 0
+	}
+	return (1.0 - dIdle/dTotal) * 100.0
+}
+
+func metricsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+
+	cpu := cpuPercent()
+	uptime := time.Since(serverStartTime)
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"uptime_seconds": int64(uptime.Seconds()),
+		"uptime_human":   fmtUptime(uptime),
+		"goroutines":     runtime.NumGoroutine(),
+		"cpu_percent":    fmt.Sprintf("%.1f", cpu),
+		"heap_alloc_mb":  fmt.Sprintf("%.2f", float64(ms.HeapAlloc)/1e6),
+		"heap_sys_mb":    fmt.Sprintf("%.2f", float64(ms.HeapSys)/1e6),
+		"heap_inuse_mb":  fmt.Sprintf("%.2f", float64(ms.HeapInuse)/1e6),
+		"stack_inuse_mb": fmt.Sprintf("%.2f", float64(ms.StackInuse)/1e6),
+		"total_alloc_mb": fmt.Sprintf("%.2f", float64(ms.TotalAlloc)/1e6),
+		"sys_mb":         fmt.Sprintf("%.2f", float64(ms.Sys)/1e6),
+		"num_gc":         ms.NumGC,
+		"gc_pause_ms":    fmt.Sprintf("%.2f", float64(ms.PauseTotalNs)/1e6),
+		"next_gc_mb":     fmt.Sprintf("%.2f", float64(ms.NextGC)/1e6),
+		"cache_entries":  getCacheEntryCount(),
+	})
+}
+
+func fmtUptime(d time.Duration) string {
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	s := int(d.Seconds()) % 60
+	if h > 0 {
+		return fmt.Sprintf("%dh %dm %ds", h, m, s)
+	}
+	if m > 0 {
+		return fmt.Sprintf("%dm %ds", m, s)
+	}
+	return fmt.Sprintf("%ds", s)
+}
+
+func getCacheEntryCount() int {
+	entries, err := os.ReadDir("results_cache")
+	if err != nil {
+		return 0
+	}
+	count := 0
+	for _, e := range entries {
+		if !e.IsDir() {
+			count++
+		}
+	}
+	return count
+}
+
 // ─── main ─────────────────────────────────────────────────────────────────────
 func main() {
 	var err error
@@ -994,9 +1217,12 @@ func main() {
 	http.HandleFunc("/download/page", pageDownloadHandler)
 	http.HandleFunc("/exports/", downloadHandler)
 	http.HandleFunc("/saved-searches", savedSearchesHandler)
+	// ── NEW ──
+	http.HandleFunc("/stats/file", fileStatsHandler)
+	http.HandleFunc("/metrics", metricsHandler)
 
 	fmt.Println("╔══════════════════════════════════════╗")
-	fmt.Println("║   LogSearch Engine v2.0              ║")
+	fmt.Println("║   LogSearch Engine v3.0              ║")
 	fmt.Println("║   http://localhost:8080              ║")
 	fmt.Println("╚══════════════════════════════════════╝")
 
