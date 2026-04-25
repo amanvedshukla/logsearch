@@ -4,3 +4,5 @@ exports/
 *.ndjson
 logsearch.db
 saved_searches.json
+*.bak
+uiserver
