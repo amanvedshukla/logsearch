@@ -1,0 +1,8 @@
+.git
+banking_logs/
+results_cache/
+exports/
+*.db
+uiserver
+*.bak
+screenshots/
