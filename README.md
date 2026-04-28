@@ -113,10 +113,10 @@ cd logsearch
 go mod tidy
 
 # Build
-go build ./cmd/uiserver/
+go build ./... 
 
 # Run
-./uiserver
+go run cmd/uiserver/main.go
 ```
 
 Open your browser at **http://localhost:8080**
