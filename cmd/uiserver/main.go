@@ -703,7 +703,7 @@ func searchSSEHandler(w http.ResponseWriter, r *http.Request) {
 	go searchFiles(ctx, gzFiles, q, trie, kwLower, excludeLower, regexPat, progressCh, resultsCh, matchWriter, &writeMu, &matchCount, maxMatches)
 
 	searchStart := time.Now()
-	noMatchTimer := time.NewTimer(time.Duration(NoMatchTimeoutSecs) * time.Second)
+	noMatchTimer := time.NewTimer(time.Duration(99999) * time.Second) // disabled
 	defer noMatchTimer.Stop()
 	timedOut := false
 	var lastProg Progress
