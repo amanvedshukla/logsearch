@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"compress/gzip"
+	pgzip "github.com/klauspost/compress/gzip"
 	"context"
 	"encoding/csv"
 	"encoding/json"
@@ -309,7 +309,7 @@ func searchFiles(
 			}
 			defer fp.Close()
 
-			gz, err := gzip.NewReader(fp)
+			gz, err := pgzip.NewReader(fp)
 			if err != nil {
 				resultsCh <- nil
 				return
